@@ -3,5 +3,8 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="CppEngine.vcxproj" />
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+  </Folder>
+  <Project Path="CppEngine.vcxproj" Id="b780e704-cae8-4bfc-aae5-6b219215ad06" />
 </Solution>

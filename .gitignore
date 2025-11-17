@@ -1,17 +1,53 @@
-# Visual Studio junk
+﻿# -------------------------
+# Visual Studio Junk
+# -------------------------
 .vs/
 *.user
+*.suo
 *.opendb
+*.VC.db
 
-# Build directories
+# -------------------------
+# Build Output
+# -------------------------
 Debug/
 Release/
 x64/
 bin/
 obj/
-
-# Temporary
+out/
 *.log
 *.cache
-*.suo
 *.pdb
+
+# -------------------------
+# CMake Files
+# -------------------------
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Testing/
+
+# -------------------------
+# Vendor Libraries (keep only include/)
+# Ignore DLLs + LIBS (large + platform-specific)
+# -------------------------
+vendor/**/lib/
+vendor/**/dll/
+
+# -------------------------
+# Windows / OS Misc
+# -------------------------
+Thumbs.db
+*.exe
+*.dll
+*.obj
+*.manifest
+*.ipch
+
+# -------------------------
+# Build Tools
+# -------------------------
+*.tlog
+*.lastbuildstate
+*.unsuccessfulbuild
