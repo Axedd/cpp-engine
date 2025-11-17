@@ -1,0 +1,17 @@
+# Visual Studio junk
+.vs/
+*.user
+*.opendb
+
+# Build directories
+Debug/
+Release/
+x64/
+bin/
+obj/
+
+# Temporary
+*.log
+*.cache
+*.suo
+*.pdb
