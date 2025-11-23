@@ -2,6 +2,9 @@
 #include <iostream>
 
 
+bool AABB(const Player& a, const Entity& b);
+void resolveCollision(Player& player, const Entity& block);
+
 // Constructor
 Engine::Engine()
 {
@@ -54,13 +57,11 @@ bool Engine::init(const char* title, int width, int height) {
 		return false;
 	}
 
-	m_Player.x = 100;
-	m_Player.y = 100;
-	m_Player.w = 50;
-	m_Player.h = 50;
+	Entity enemy = createEntity(0, 0, 50, 50, 0.0, 0.0);
 
-	m_Player.vx = 200.0f;
-	m_Player.vy = 0.0f;
+	m_Player = { 200, 400, 50, 50, 0, 0, false, 255, 0, 0 };
+
+	createEntity(0, 500, 1000, 50, 0, 0, 0, 255, 255);
 
 	m_Running = true;
 	return true;
@@ -108,20 +109,43 @@ void Engine::processInput()
 	const Uint8* state = SDL_GetKeyboardState(NULL);
 
 	m_Player.vx = 0;
-	m_Player.vy = 0;
 
 	float speed = 200.0f;
 
-	if (state[SDL_SCANCODE_W]) m_Player.vy = -speed;
-	if (state[SDL_SCANCODE_S]) m_Player.vy = speed;
 	if (state[SDL_SCANCODE_A]) m_Player.vx = -speed;
 	if (state[SDL_SCANCODE_D]) m_Player.vx = speed;
+
+	if (state[SDL_SCANCODE_SPACE] && m_Player.isGrounded) {
+		m_Player.vy = -300.0f;
+		m_Player.isGrounded = false;
+	}
+
 }
 
 void Engine::update()
 {
+	std::cout << m_Player.isGrounded << "\n";
+
+	// Apply gravity
+	if (!m_Player.isGrounded)
+	{
+		m_Player.vy += GRAVITY * m_DeltaTime;
+	}
+
+	// Move player
 	m_Player.x += m_Player.vx * m_DeltaTime;
 	m_Player.y += m_Player.vy * m_DeltaTime;
+
+	// Reset grounded (will be set true in collision)
+	m_Player.isGrounded = false;
+
+	// Collision
+	for (Entity& e : m_Entities)
+	{
+		if (AABB(m_Player, e)) {
+			resolveCollision(m_Player, e);
+		}
+	}
 }
 
 void Engine::render()
@@ -131,14 +155,26 @@ void Engine::render()
 	SDL_RenderClear(m_Renderer);
 
 	// Draw player
-	SDL_Rect r;
-	r.x = (int)m_Player.x;
-	r.y = (int)m_Player.y;
-	r.w = (int)m_Player.w;
-	r.h = (int)m_Player.h;
+	SDL_Rect p;
+	p.x = (int)m_Player.x;
+	p.y = (int)m_Player.y;
+	p.w = (int)m_Player.w;
+	p.h = (int)m_Player.h;
+	SDL_SetRenderDrawColor(m_Renderer, m_Player.r, m_Player.g, m_Player.b, 255);
+	SDL_RenderFillRect(m_Renderer, &p);
 
-	SDL_SetRenderDrawColor(m_Renderer, 255, 0, 0, 255);
-	SDL_RenderFillRect(m_Renderer, &r);
+	// Draw entities
+	for (const Entity& e : m_Entities) {
+		SDL_Rect r;
+		r.x = (int)e.x;
+		r.y = (int)e.y;
+		r.w = (int)e.w;
+		r.h = (int)e.h;
+		
+
+		SDL_SetRenderDrawColor(m_Renderer, e.r, e.g, e.b, 255);
+		SDL_RenderFillRect(m_Renderer, &r);
+	}
 
 	// Present the final frame
 	SDL_RenderPresent(m_Renderer);
@@ -155,4 +191,71 @@ void Engine::shutdown()
 	}
 
 	SDL_Quit();
+}
+
+
+Entity& Engine::createEntity(float x, float y, float w, float h,
+	float vx, float vy,
+	uint8_t r, uint8_t g, uint8_t b)
+{
+	Entity e;
+	e.x = x;
+	e.y = y;
+	e.w = w;
+	e.h = h;
+	e.vx = vx;
+	e.vy = vy;
+	e.r = r;
+	e.g = g;
+	e.b = b;
+
+	m_Entities.push_back(e);
+	return m_Entities.back();
+}
+
+bool AABB(const Player& a, const Entity& b) {
+	return (
+		a.x < b.x + b.w &&
+		a.x + a.w > b.x &&
+		a.y < b.y + b.h &&
+		a.y + a.h > b.y
+		);
+}
+
+
+void resolveCollision(Player& player, const Entity& block) {
+
+	float px = player.x + player.w * 0.5f;
+	float py = player.y + player.h * 0.5f;
+	float bx = block.x + block.w * 0.5f;
+	float by = block.y + block.h * 0.5f;
+
+	float overlapX = (player.w * 0.5f + block.w * 0.5f) - fabs(px - bx);
+	float overlapY = (player.h * 0.5f + block.h * 0.5f) - fabs(py - by);
+
+	if (overlapX < overlapY) {
+		// horizontal push
+		if (px < bx) player.x -= overlapX;
+		else         player.x += overlapX;
+		player.vx = 0;
+	}
+	else {
+		// vertical push based on direction
+		if (player.vy > 0) {
+			// landed
+			player.y = block.y - player.h;
+			player.vy = 0;
+			player.isGrounded = true;
+		}
+		else if (player.vy < 0) {
+			// hit ceiling
+			player.y = block.y + block.h;
+			player.vy = 0;
+		}
+		else {
+			// fallback
+			if (py < by) player.y -= overlapY;
+			else         player.y += overlapY;
+		}
+	}
 }
