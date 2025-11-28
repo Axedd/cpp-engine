@@ -1,17 +1,20 @@
-#include <SDL.h>
-#include <iostream>
+// main.cpp
 #include "Engine.h"
+#include "Game.h"
 
 int main(int argc, char** argv)
 {
     Engine engine;
+    Game   game;
 
-    if (!engine.init("Bing Chilling C++ Engine", 1280, 720)) {
-        std::cout << "Engine failed to initialize\n";
+    engine.setGame(&game);
+
+    if (!engine.init("Bing Chilling C++ Engine", 1024, 768)) {
         return -1;
     }
 
     engine.run();
+    engine.shutdown();
 
     return 0;
 }

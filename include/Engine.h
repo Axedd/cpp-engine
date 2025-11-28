@@ -1,64 +1,35 @@
+// Engine.h
 #pragma once
 #include <SDL.h>
-#include <vector>
+#include <cstdint>
 
-
-struct Entity {
-	float x, y;
-	float w, h;
-	float vx, vy;
-
-	uint8_t r, g, b;
-};
-
-struct Player {
-	float x, y;
-	float w, h;
-	
-	float vx, vy; // velocity
-	bool isGrounded; // ground flag for jumps
-
-	uint8_t r, g, b;
-};
+class IGame; // forward declare
 
 class Engine {
 public:
-	Engine();
-	~Engine();
+    Engine();
+    ~Engine();
 
-	bool init(const char* title, int width, int height);
-	void run();
-	void shutdown();
+    bool init(const char* title, int width, int height);
+    void run();
+    void shutdown();
 
-	const float TARGET_FRAME_TIME = 1.0f / 144.0f;
-	float getDeltaTime() const { return m_DeltaTime; }
-	
-	Entity& createEntity(float x, float y, float w, float h,
-		float vx = 0, float vy = 0,
-		uint8_t r = 255, uint8_t g = 255, uint8_t b = 255);
+    void setGame(IGame* game) { m_Game = game; }
 
+    float         getDeltaTime() const { return m_DeltaTime; }
+    SDL_Renderer* getRenderer()  const { return m_Renderer; }
 
 private:
-	void processInput();
-	void update();
-	void render();
+    void processEvents();
 
 private:
-	SDL_Window* m_Window;
-	SDL_Renderer* m_Renderer;
-	bool m_Running;
+    SDL_Window* m_Window = nullptr;
+    SDL_Renderer* m_Renderer = nullptr;
+    bool          m_Running = false;
 
-	int m_WindowWidth;
-	int m_WindowHeight;
+    float     m_DeltaTime = 0.0f;
+    std::uint64_t m_LastCounter = 0;
+    std::uint64_t m_Frequency = 1;
 
-	float m_DeltaTime;
-	uint64_t m_LastCounter;
-	uint64_t m_Frequency;
-
-	Player m_Player;
-	std::vector<Entity> m_Entities;
-
-	const float GRAVITY = 900.0f;
+    IGame* m_Game = nullptr;   // the currently running game
 };
-
-
