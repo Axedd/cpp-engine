@@ -53,8 +53,14 @@ void Game::onUpdate(Engine& engine)
 
     // horizontal
     m_Player.vx = 0.0f;
-    if (kb[SDL_SCANCODE_A]) m_Player.vx = -MOVE_SPEED;
-    if (kb[SDL_SCANCODE_D]) m_Player.vx = MOVE_SPEED;
+    if (kb[SDL_SCANCODE_A]) {
+        m_Player.vx = -MOVE_SPEED;
+        m_Player.viewDir = Left;
+    }
+    if (kb[SDL_SCANCODE_D]) {
+        m_Player.vx = MOVE_SPEED;
+        m_Player.viewDir = Right;
+    }
 
     // jump
     if (kb[SDL_SCANCODE_SPACE] && m_Player.isGrounded) {
@@ -66,11 +72,23 @@ void Game::onUpdate(Engine& engine)
     if (!m_Player.isGrounded)
         m_Player.vy += GRAVITY * dt;
 
+    // Shoot
+    if (kb[SDL_SCANCODE_E] && m_Player.shootCooldown == 0) {
+        shootBullet();
+        m_Player.shootCooldown = 0.2f;
+    }
+
     // integrate
     m_Player.x += m_Player.vx * dt;
     m_Player.y += m_Player.vy * dt;
 
+    m_Player.shootCooldown -= dt;
+    if (m_Player.shootCooldown < 0) m_Player.shootCooldown = 0;
+
+
     m_Player.isGrounded = false;
+
+    updateBullets(dt);
 
     // collisions
     for (Entity& e : m_Entities) {
@@ -109,6 +127,13 @@ void Game::onRender(Engine& engine)
         SDL_RenderFillRect(r, &rect);
     }
 
+    for (const Bullet& b : bullets) {
+        Entity body = b.body;
+        SDL_Rect rect{ (int)body.x, (int)body.y, (int)body.w, (int)body.h };
+        SDL_SetRenderDrawColor(r, body.r, body.g, body.b, 255);
+        SDL_RenderFillRect(r, &rect);
+    }
+
     SDL_RenderPresent(r);
 }
 
@@ -121,6 +146,44 @@ Entity& Game::createEntity(float x, float y, float w, float h,
     Entity e{ x, y, w, h, vx, vy, r, g, b };
     m_Entities.push_back(e);
     return m_Entities.back();
+}
+
+void Game::shootBullet() {
+    float spawnX = (m_Player.viewDir == Right)
+        ? m_Player.x + m_Player.w
+        : m_Player.x - 20;
+
+    float spawnY = m_Player.y + m_Player.h / 2 - 10;
+
+    Entity e = Entity(spawnX, spawnY, 20, 20, 500, 0, 255, 0, 0);
+    Bullet bulletEntity = { e , 0.2, m_Player.viewDir};
+    bullets.push_back(bulletEntity);
+}
+
+void Game::updateBullets(float dt) {
+
+    for (auto& b : bullets) {
+        b.lifetime -= dt;
+
+        if (b.lifetime <= 0) {
+            removeBullets();
+        }
+
+        if (b.dir == Right) {
+            b.body.x += b.body.vx * dt;
+        }
+        else {
+            b.body.x -= b.body.vx * dt;
+        }
+    }
+}
+
+void Game::removeBullets() {
+    bullets.erase(
+        std::remove_if(bullets.begin(), bullets.end(),
+            [](const Bullet& b) { return b.lifetime <= 0; }),
+        bullets.end()
+    );
 }
 
 void Game::resetGame()

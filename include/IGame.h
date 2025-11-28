@@ -8,6 +8,11 @@ enum class GameState {
 	GameOver
 };
 
+enum Direction {
+	Left,
+	Right
+};
+
 struct Entity {
 	float x, y;
 	float w, h;
@@ -28,6 +33,16 @@ struct Player {
 	int health;
 	int lives;
 	bool isAlive;
+	float shootCooldown = 0.2f;
+
+	Direction viewDir = Right;
+};
+
+struct Bullet {
+	Entity body;
+	float damage;
+	Direction dir;
+	float lifetime = 0.5f;
 };
 
 class IGame {
