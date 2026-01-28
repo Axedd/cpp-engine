@@ -10,11 +10,17 @@ static constexpr float JUMP_SPEED = -300.0f;
 bool AABB(const Player& a, const Entity& b);
 void resolveCollision(Player& player, const Entity& block);
 
+
+
 // -------- IGame overrides --------
 
 void Game::onInit(Engine& engine)
 {
     m_Entities.clear();
+
+    SDL_Renderer* r = engine.getRenderer();
+
+
 
     // ground
     createEntity(0, 500, 1000, 50, 0, 0, 0, 255, 255);
@@ -27,6 +33,9 @@ void Game::onInit(Engine& engine)
         255, 0, 0,               // color
         100, 3, true             // health, lives, isAlive
     };
+
+    m_Camera = new Camera(1024, 768, 2000, 1500);
+
 
     m_State = GameState::Playing;
     m_RequestedQuit = false;
@@ -45,6 +54,13 @@ void Game::onUpdate(Engine& engine)
 
     const Uint8* kb = SDL_GetKeyboardState(nullptr);
     float dt = engine.getDeltaTime();
+
+    m_Player.isAiming = false;
+
+    m_Camera->x = (m_Player.x + m_Player.w / 2) - (1024 / 2);
+    m_Camera->y = (m_Player.y + m_Player.h / 2) - (768 / 2);
+
+    m_Camera->update(m_Player.x, m_Player.y, m_Player.w, m_Player.h, dt);
 
     if (m_State == GameState::GameOver) {
         if (kb[SDL_SCANCODE_R]) resetGame();
@@ -68,6 +84,8 @@ void Game::onUpdate(Engine& engine)
         m_Player.isGrounded = false;
     }
 
+    // m_Camera->shake(20.0f, 5.0f);
+
     // gravity
     if (!m_Player.isGrounded)
         m_Player.vy += GRAVITY * dt;
@@ -77,6 +95,8 @@ void Game::onUpdate(Engine& engine)
         shootBullet();
         m_Player.shootCooldown = 0.2f;
     }
+
+    if (kb[SDL_SCANCODE_K]) m_Player.isAiming = true;
 
     // integrate
     m_Player.x += m_Player.vx * dt;
@@ -110,26 +130,50 @@ void Game::onRender(Engine& engine)
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
 
-    // player
-    SDL_Rect p{
-        (int)m_Player.x,
-        (int)m_Player.y,
-        (int)m_Player.w,
-        (int)m_Player.h
-    };
+    int camX = m_Camera->getRenderX();
+    int camY = m_Camera->getRenderY();
+
+    // 1. Render Player (Subtract camera offset)
+    SDL_Rect p{ (int)m_Player.x - camX,
+                (int)m_Player.y - camY,
+                (int)m_Player.w,
+                (int)m_Player.h };
     SDL_SetRenderDrawColor(r, m_Player.r, m_Player.g, m_Player.b, 255);
     SDL_RenderFillRect(r, &p);
 
-    // entities
+    // 2. Render Entities (Subtract camera offset)
     for (const Entity& e : m_Entities) {
-        SDL_Rect rect{ (int)e.x, (int)e.y, (int)e.w, (int)e.h };
+        SDL_Rect rect{ (int)e.x - camX,
+                       (int)e.y - camY,
+                       (int)e.w,
+                       (int)e.h };
         SDL_SetRenderDrawColor(r, e.r, e.g, e.b, 255);
         SDL_RenderFillRect(r, &rect);
     }
 
+    // 3. Render Aiming UI/Effect (Subtract camera offset)
+    if (m_Player.isAiming) {
+        float spawnX = (m_Player.viewDir == Right) ? m_Player.x + m_Player.w : m_Player.x - m_Player.w;
+        float spawnY = m_Player.y + m_Player.h / 2 - 10;
+
+        // Note: Subtracting m_Camera.x/y here so the dots stay relative to the world
+        SDL_Rect rect{ (int)spawnX - m_Camera->x, (int)spawnY - m_Camera->y, 10, 10 };
+        SDL_Rect rect2{ (int)spawnX + 20 - m_Camera->x, (int)spawnY - m_Camera->y, 10, 10 };
+        SDL_Rect rect3{ (int)spawnX + 40 - m_Camera->x, (int)spawnY - m_Camera->y, 10, 10 };
+
+        SDL_SetRenderDrawColor(r, 255, 0, 0, 255);
+        SDL_RenderFillRect(r, &rect);
+        SDL_RenderFillRect(r, &rect2);
+        SDL_RenderFillRect(r, &rect3);
+    }
+
+    // 4. Render Bullets (Subtract camera offset)
     for (const Bullet& b : bullets) {
         Entity body = b.body;
-        SDL_Rect rect{ (int)body.x, (int)body.y, (int)body.w, (int)body.h };
+        SDL_Rect rect{ (int)body.x - m_Camera->x,
+                       (int)body.y - m_Camera->y,
+                       (int)body.w,
+                       (int)body.h };
         SDL_SetRenderDrawColor(r, body.r, body.g, body.b, 255);
         SDL_RenderFillRect(r, &rect);
     }
@@ -156,7 +200,7 @@ void Game::shootBullet() {
     float spawnY = m_Player.y + m_Player.h / 2 - 10;
 
     Entity e = Entity(spawnX, spawnY, 20, 20, 500, 0, 255, 0, 0);
-    Bullet bulletEntity = { e , 0.2, m_Player.viewDir};
+    Bullet bulletEntity = { e , 0.2f, m_Player.viewDir};
     bullets.push_back(bulletEntity);
 }
 

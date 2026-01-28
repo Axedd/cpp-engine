@@ -36,6 +36,7 @@ struct Player {
 	float shootCooldown = 0.2f;
 
 	Direction viewDir = Right;
+	bool isAiming;
 };
 
 struct Bullet {

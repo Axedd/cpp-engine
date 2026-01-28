@@ -1,5 +1,6 @@
 #pragma once
 #include "IGame.h"
+#include "Camera.h"
 #include <vector>
 
 class Game : public IGame {
@@ -19,6 +20,8 @@ private:
     void updateBullets(float);
     void removeBullets();
     void killPlayer();
+
+    Camera* m_Camera;
 
     Player              m_Player{};
     std::vector<Entity> m_Entities;
