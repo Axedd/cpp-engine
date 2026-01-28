@@ -2,6 +2,7 @@
 #include "Engine.h"
 #include "IGame.h"
 #include <iostream>
+#include <SDL_image.h>
 
 Engine::Engine() = default;
 
@@ -34,7 +35,18 @@ bool Engine::init(const char* title, int width, int height)
     if (!m_Renderer) {
         std::cout << "SDL_CreateRenderer Error: " << SDL_GetError() << "\n";
         return false;
+    
     }
+
+
+    // Init SDL_Image
+    const int flags = IMG_INIT_PNG;
+    if ((IMG_Init(flags) & flags) != flags) {
+        std::cout << "IMG_Init error: " << IMG_GetError() << "\n";
+        return false;
+    }
+
+    m_Textures = std::make_unique<TextureManager>(m_Renderer);
 
     m_Frequency = SDL_GetPerformanceFrequency();
     m_LastCounter = SDL_GetPerformanceCounter();
@@ -49,6 +61,7 @@ bool Engine::init(const char* title, int width, int height)
 
     return true;
 }
+
 
 void Engine::processEvents()
 {
@@ -86,6 +99,13 @@ void Engine::run()
 
 void Engine::shutdown()
 {
+    if (m_Textures) {
+        m_Textures->clear();
+        m_Textures.reset();
+    }
+
+    IMG_Quit();
+
     if (m_Renderer) {
         SDL_DestroyRenderer(m_Renderer);
         m_Renderer = nullptr;
@@ -94,5 +114,6 @@ void Engine::shutdown()
         SDL_DestroyWindow(m_Window);
         m_Window = nullptr;
     }
+
     SDL_Quit();
 }

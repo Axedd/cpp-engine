@@ -267,6 +267,7 @@ void Game::killPlayer()
     }
 }
 
+// AABB Collision 
 bool AABB(const Player& a, const Entity& b)
 {
     return (
@@ -277,6 +278,8 @@ bool AABB(const Player& a, const Entity& b)
         );
 }
 
+// If collision is detected (AABB function) 
+// We correct the entity in space with resolveCollision()
 void resolveCollision(Player& player, const Entity& block)
 {
     float px = player.x + player.w * 0.5f;

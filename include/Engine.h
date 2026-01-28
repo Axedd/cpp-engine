@@ -1,9 +1,12 @@
 // Engine.h
 #pragma once
 #include <SDL.h>
+#include <memory>
 #include <cstdint>
+#include "gfx/TextureManager.h"
 
 class IGame; // forward declare
+class TextureManager;
 
 class Engine {
 public:
@@ -19,6 +22,8 @@ public:
     float         getDeltaTime() const { return m_DeltaTime; }
     SDL_Renderer* getRenderer()  const { return m_Renderer; }
 
+    TextureManager& textures() { return *m_Textures; }
+
 private:
     void processEvents();
 
@@ -32,4 +37,6 @@ private:
     std::uint64_t m_Frequency = 1;
 
     IGame* m_Game = nullptr;   // the currently running game
+
+    std::unique_ptr<TextureManager> m_Textures;
 };
