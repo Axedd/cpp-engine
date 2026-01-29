@@ -26,7 +26,7 @@ void Game::onInit(Engine& engine)
     assets.coin.tex = engine.textures().load("coin", "assets/coin.png");
     assets.coin.frameW = 32;
     assets.coin.frameH = 32;
-    assets.coin.frames = 0;
+    assets.coin.frames = 1;
     assets.coin.fps = 0.0f;
     assets.coin.loop = false;
 
