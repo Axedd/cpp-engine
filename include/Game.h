@@ -1,6 +1,7 @@
 #pragma once
 #include "IGame.h"
 #include "Camera.h"
+#include "Game/GameTypes.h"
 #include <vector>
 
 class Game : public IGame {
@@ -23,9 +24,11 @@ private:
 
     Camera* m_Camera;
 
+    std::vector<Coin> coins;
     Player              m_Player{};
     std::vector<Entity> m_Entities;
     GameState           m_State = GameState::Playing;
     std::vector<Bullet> bullets;
     bool                m_RequestedQuit = false;
+    int score = 0;
 };
