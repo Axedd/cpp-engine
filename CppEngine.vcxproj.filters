@@ -6,6 +6,8 @@
     <ClInclude Include="include\IGame.h" />
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="src\gfx\TextureManager.h" />
+    <ClInclude Include="include\Game\GameTypes.h" />
+    <ClInclude Include="include\Game\Assets.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />

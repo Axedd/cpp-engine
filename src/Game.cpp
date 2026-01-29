@@ -7,8 +7,9 @@ static constexpr float MOVE_SPEED = 200.0f;
 static constexpr float JUMP_SPEED = -300.0f;
 
 // Forward declarations for collision helpers
-bool AABB(const Player& a, const Entity& b);
-void resolveCollision(Player& player, const Entity& block);
+static bool AABB(const Player& a, const Entity& b);
+static void resolveCollision(Player& player, const Entity& block);
+static void renderCoin(SDL_Renderer* r, const Coin& c, const SpriteSheet& sheet, int camX, int camY);
 
 
 
@@ -20,6 +21,18 @@ void Game::onInit(Engine& engine)
 
     SDL_Renderer* r = engine.getRenderer();
 
+        
+    // Coin
+    assets.coin.tex = engine.textures().load("coin", "assets/coin.png");
+    assets.coin.frameW = 32;
+    assets.coin.frameH = 32;
+    assets.coin.frames = 0;
+    assets.coin.fps = 0.0f;
+    assets.coin.loop = false;
+
+    // Create coins
+    createCoin(100, 400, 32, 32, 1);
+    createCoin(200, 400, 32, 32, 1);
 
 
     // ground
@@ -178,6 +191,10 @@ void Game::onRender(Engine& engine)
         SDL_RenderFillRect(r, &rect);
     }
 
+    for (const auto& c : coins)
+        if (!c.collected)
+            renderCoin(r, c, assets.coin, camX, camY);
+
     SDL_RenderPresent(r);
 }
 
@@ -192,6 +209,32 @@ Entity& Game::createEntity(float x, float y, float w, float h,
     return m_Entities.back();
 }
 
+static void renderCoin(SDL_Renderer* r, const Coin& c, const SpriteSheet& sheet, int camX, int camY)
+{
+    SDL_Rect src{ c.frame * sheet.frameW, 0, sheet.frameW, sheet.frameH };
+    SDL_Rect dst{
+        (int)c.body.x - camX,
+        (int)c.body.y - camY,
+        (int)c.body.w,
+        (int)c.body.h
+    };
+    SDL_RenderCopy(r, sheet.tex, &src, &dst);
+}
+
+Coin& Game::createCoin(float x, float y, float w, float h, int value)
+{
+    Coin c{};
+    c.body.x = x;
+    c.body.y = y;
+    c.body.w = w;
+    c.body.h = h;
+    c.value = value;
+
+    coins.push_back(c);
+    return coins.back();
+}
+
+
 void Game::shootBullet() {
     float spawnX = (m_Player.viewDir == Right)
         ? m_Player.x + m_Player.w
@@ -204,22 +247,16 @@ void Game::shootBullet() {
     bullets.push_back(bulletEntity);
 }
 
-void Game::updateBullets(float dt) {
-
+void Game::updateBullets(float dt)
+{
     for (auto& b : bullets) {
         b.lifetime -= dt;
 
-        if (b.lifetime <= 0) {
-            removeBullets();
-        }
-
-        if (b.dir == Right) {
-            b.body.x += b.body.vx * dt;
-        }
-        else {
-            b.body.x -= b.body.vx * dt;
-        }
+        if (b.dir == Right) b.body.x += b.body.vx * dt;
+        else               b.body.x -= b.body.vx * dt;
     }
+
+    removeBullets(); // Call once (prevents invalidation of b in iterator)
 }
 
 void Game::removeBullets() {
@@ -268,7 +305,7 @@ void Game::killPlayer()
 }
 
 // AABB Collision 
-bool AABB(const Player& a, const Entity& b)
+static bool AABB(const Player& a, const Entity& b)
 {
     return (
         a.x < b.x + b.w &&
@@ -280,7 +317,7 @@ bool AABB(const Player& a, const Entity& b)
 
 // If collision is detected (AABB function) 
 // We correct the entity in space with resolveCollision()
-void resolveCollision(Player& player, const Entity& block)
+static void resolveCollision(Player& player, const Entity& block)
 {
     float px = player.x + player.w * 0.5f;
     float py = player.y + player.h * 0.5f;
