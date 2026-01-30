@@ -3,6 +3,7 @@
 #include "Camera.h"
 #include "Game/GameTypes.h"
 #include "Game/Assets.h"
+#include "ui/HUD.h"
 #include <vector>
 
 class Game : public IGame {
@@ -11,6 +12,7 @@ public:
     void onEvent(const SDL_Event& event)  override;
     void onUpdate(Engine& engine)          override;
     void onRender(Engine& engine)          override;
+    void onShutdown(Engine& engine) override;
     Coin& createCoin(float x, float y, float w, float h, int value = 1);
 
 private:
@@ -27,6 +29,9 @@ private:
     Camera* m_Camera;
 
     GameAssets assets;
+
+    HUD hud;
+    TTF_Font* m_HudFont = nullptr;
 
     std::vector<Coin> coins;
     Player              m_Player{};

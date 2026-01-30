@@ -105,13 +105,13 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)vendor\SDL2\include;$(ProjectDir)vendor\SDL2_image\include;$(ProjectDir)include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)vendor\SDL2\include;$(ProjectDir)vendor\SDL2_image\include;$(ProjectDir)include;$(ProjectDir)vendor\SDL2_ttf-2.24.0\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)\vendor\SDL2\lib;$(ProjectDir)\vendor\SDL2_image\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)\vendor\SDL2\lib;$(ProjectDir)\vendor\SDL2_image\lib;$(ProjectDir)\vendor\SDL2_ttf-2.24.0\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /I "$(ProjectDir)\vendor\SDL2\dll\SDL2.dll" "$(OutDir)"</Command>
@@ -140,6 +140,8 @@
     <ClInclude Include="include\Game\GameTypes.h" />
     <ClInclude Include="include\IGame.h" />
     <ClInclude Include="include\Camera.h" />
+    <ClInclude Include="include\ui\HUD.h" />
+    <ClInclude Include="include\ui\TextLabel.h" />
     <ClInclude Include="src\gfx\TextureManager.h" />
   </ItemGroup>
   <ItemGroup>
@@ -148,6 +150,8 @@
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\gfx\TextureManager.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\ui\HUD.cpp" />
+    <ClCompile Include="src\ui\TextLabel.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

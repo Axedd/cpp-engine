@@ -12,4 +12,6 @@ public:
 	virtual void onEvent(const SDL_Event& e) = 0;
 	virtual void onUpdate(Engine& engine) = 0;
 	virtual void onRender(Engine& engine) = 0;
+
+	virtual void onShutdown(Engine& engine) {};
 };

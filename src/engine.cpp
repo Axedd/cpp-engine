@@ -39,7 +39,10 @@ bool Engine::init(const char* title, int width, int height)
     
     }
 
-    TTF_Init();
+    if (TTF_Init() == -1) {
+        std::cout << "TTF_Init Error: " << TTF_GetError() << "\n";
+        return false;
+    }
 
 
     // Init SDL_Image
@@ -102,6 +105,11 @@ void Engine::run()
 
 void Engine::shutdown()
 {
+    if (m_Game) {
+        m_Game->onShutdown(*this);
+        m_Game = nullptr; // optional: undgå double cleanup
+    }
+
     if (m_Textures) {
         m_Textures->clear();
         m_Textures.reset();

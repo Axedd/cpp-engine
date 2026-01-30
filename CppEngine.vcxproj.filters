@@ -9,6 +9,8 @@
     <ClInclude Include="include\Game\GameTypes.h" />
     <ClInclude Include="include\Game\Assets.h" />
     <ClInclude Include="include\Game\Collision.h" />
+    <ClInclude Include="include\ui\HUD.h" />
+    <ClInclude Include="include\ui\TextLabel.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
@@ -16,5 +18,7 @@
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\gfx\TextureManager.cpp" />
+    <ClCompile Include="src\ui\HUD.cpp" />
+    <ClCompile Include="src\ui\TextLabel.cpp" />
   </ItemGroup>
 </Project>

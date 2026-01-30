@@ -51,6 +51,13 @@ void Game::onInit(Engine& engine)
 
     m_Camera = new Camera(1024, 768, 2000, 1500);
 
+    m_HudFont = TTF_OpenFont("assets/fonts/Inter_24pt-Bold.ttf", 24);
+    if (!m_HudFont) {
+        SDL_Log("TTF_OpenFont failed: %s", TTF_GetError());
+    }
+
+    hud.init(engine.getRenderer(), m_HudFont);
+
 
     m_State = GameState::Playing;
     m_RequestedQuit = false;
@@ -138,6 +145,14 @@ void Game::onUpdate(Engine& engine)
         }
     }
 
+    // HUD data update
+    HUDData data;
+    data.score = score;
+    data.health = m_Player.health;
+    data.lives = m_Player.lives;
+
+    hud.update(engine.getRenderer(), data);
+
     // simple fell off world
     if (m_Player.y > 800.0f) {
         killPlayer();
@@ -188,6 +203,8 @@ void Game::onRender(Engine& engine)
         SDL_RenderFillRect(r, &rect3);
     }
 
+
+
     // 4. Render Bullets (Subtract camera offset)
     for (const Bullet& b : bullets) {
         Entity body = b.body;
@@ -203,7 +220,21 @@ void Game::onRender(Engine& engine)
         if (!c.collected)
             renderCoin(r, c, assets.coin, camX, camY);
 
+    hud.render(r, 1024, 768);
+
     SDL_RenderPresent(r);
+}
+
+void Game::onShutdown(Engine& engine)
+{
+    if (m_HudFont) {
+        TTF_CloseFont(m_HudFont);
+        m_HudFont = nullptr;
+    }
+
+    delete m_Camera;
+    m_Camera = nullptr;
+
 }
 
 // -------- Game private helpers --------
