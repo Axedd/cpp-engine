@@ -11,6 +11,7 @@ static constexpr float MOVE_SPEED = 200.0f;
 static constexpr float JUMP_SPEED = -300.0f;
 
 
+
 static void resolveCollision(Player& player, const Entity& block);
 static void renderCoin(SDL_Renderer* r, const Coin& c, const SpriteSheet& sheet, int camX, int camY);
 
@@ -132,7 +133,8 @@ void Game::onUpdate(Engine& engine)
     for (Coin& c : coins) {
         if (!c.collected && AABB(m_Player, c)) {
             c.collected = true;
-            std::cout << "Coin pick-up\n";
+            score += c.value;
+            std::cout << "Score: " << score << "\n";
         }
     }
 

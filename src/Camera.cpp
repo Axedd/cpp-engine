@@ -9,6 +9,7 @@ Camera::Camera(int width, int height, int levelWidth, int levelHeight)
     y = 0;
 }
 
+// Camera shake effect (explosive)
 void Camera::shake(float magnitude, float duration) {
     m_shakeMagnitude = magnitude;
     m_shakeDuration = duration;

@@ -3,6 +3,7 @@
 #include "IGame.h"
 #include <iostream>
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 
 Engine::Engine() = default;
 
@@ -37,6 +38,8 @@ bool Engine::init(const char* title, int width, int height)
         return false;
     
     }
+
+    TTF_Init();
 
 
     // Init SDL_Image
@@ -105,6 +108,7 @@ void Engine::shutdown()
     }
 
     IMG_Quit();
+    TTF_Quit();
 
     if (m_Renderer) {
         SDL_DestroyRenderer(m_Renderer);
@@ -114,6 +118,8 @@ void Engine::shutdown()
         SDL_DestroyWindow(m_Window);
         m_Window = nullptr;
     }
+
+
 
     SDL_Quit();
 }
