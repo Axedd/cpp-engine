@@ -136,6 +136,7 @@
     <ClInclude Include="include\Engine.h" />
     <ClInclude Include="include\Game.h" />
     <ClInclude Include="include\Game\Assets.h" />
+    <ClInclude Include="include\Game\Collision.h" />
     <ClInclude Include="include\Game\GameTypes.h" />
     <ClInclude Include="include\IGame.h" />
     <ClInclude Include="include\Camera.h" />

@@ -1,17 +1,18 @@
 #include "Game.h"
 #include "Engine.h"   
+#include "Game/Collision.h"
 #include <iostream>
+#include <cmath>
+#include <algorithm>
+
 
 static constexpr float GRAVITY = 900.0f;
 static constexpr float MOVE_SPEED = 200.0f;
 static constexpr float JUMP_SPEED = -300.0f;
 
-// Forward declarations for collision helpers
-static bool AABB(const Player& a, const Entity& b);
+
 static void resolveCollision(Player& player, const Entity& block);
 static void renderCoin(SDL_Renderer* r, const Coin& c, const SpriteSheet& sheet, int camX, int camY);
-
-
 
 // -------- IGame overrides --------
 
@@ -125,8 +126,13 @@ void Game::onUpdate(Engine& engine)
 
     // collisions
     for (Entity& e : m_Entities) {
-        if (AABB(m_Player, e)) {
-            resolveCollision(m_Player, e);
+        if (AABB(m_Player, e)) resolveCollision(m_Player, e);
+    }
+
+    for (Coin& c : coins) {
+        if (!c.collected && AABB(m_Player, c)) {
+            c.collected = true;
+            std::cout << "Coin pick-up\n";
         }
     }
 
@@ -304,17 +310,6 @@ void Game::killPlayer()
     }
 }
 
-// AABB Collision 
-static bool AABB(const Player& a, const Entity& b)
-{
-    return (
-        a.x < b.x + b.w &&
-        a.x + a.w > b.x &&
-        a.y < b.y + b.h &&
-        a.y + a.h > b.y
-        );
-}
-
 // If collision is detected (AABB function) 
 // We correct the entity in space with resolveCollision()
 static void resolveCollision(Player& player, const Entity& block)
@@ -353,3 +348,4 @@ static void resolveCollision(Player& player, const Entity& block)
         }
     }
 }
+
