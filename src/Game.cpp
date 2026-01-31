@@ -41,8 +41,6 @@ void Game::onInit(Engine& engine)
         hud.init(r, m_HudFont);
     }
 
-    hud.init(engine.getRenderer(), m_HudFont);
-
     buildLevel();
     m_State = GameState::Playing;
     m_RequestedQuit = false;
