@@ -62,9 +62,6 @@ void Game::onUpdate(Engine& engine)
 
     m_Player.isAiming = false;
 
-    m_Camera->x = (m_Player.x + m_Player.w / 2) - (1024 / 2);
-    m_Camera->y = (m_Player.y + m_Player.h / 2) - (768 / 2);
-
     m_Camera->update(m_Player.x, m_Player.y, m_Player.w, m_Player.h, dt);
 
     if (m_State == GameState::GameOver) {
@@ -175,10 +172,9 @@ void Game::onRender(Engine& engine)
         float spawnX = (m_Player.viewDir == Right) ? m_Player.x + m_Player.w : m_Player.x - m_Player.w;
         float spawnY = m_Player.y + m_Player.h / 2 - 10;
 
-        // Note: Subtracting m_Camera.x/y here so the dots stay relative to the world
-        SDL_Rect rect{ (int)spawnX - m_Camera->x, (int)spawnY - m_Camera->y, 10, 10 };
-        SDL_Rect rect2{ (int)spawnX + 20 - m_Camera->x, (int)spawnY - m_Camera->y, 10, 10 };
-        SDL_Rect rect3{ (int)spawnX + 40 - m_Camera->x, (int)spawnY - m_Camera->y, 10, 10 };
+        SDL_Rect rect{ (int)spawnX - camX, (int)spawnY - camY, 10, 10 };
+        SDL_Rect rect2{ (int)spawnX + 20 - camX, (int)spawnY - camY, 10, 10 };
+        SDL_Rect rect3{ (int)spawnX + 40 - camX, (int)spawnY - camY, 10, 10 };
 
         SDL_SetRenderDrawColor(r, 255, 0, 0, 255);
         SDL_RenderFillRect(r, &rect);
@@ -191,8 +187,8 @@ void Game::onRender(Engine& engine)
     // 4. Render Bullets (Subtract camera offset)
     for (const Bullet& b : bullets) {
         Entity body = b.body;
-        SDL_Rect rect{ (int)body.x - m_Camera->x,
-                       (int)body.y - m_Camera->y,
+        SDL_Rect rect{ (int)body.x - camX,
+                       (int)body.y - camY,
                        (int)body.w,
                        (int)body.h };
         SDL_SetRenderDrawColor(r, body.r, body.g, body.b, 255);
