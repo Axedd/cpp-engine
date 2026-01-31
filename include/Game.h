@@ -13,7 +13,6 @@ public:
     void onUpdate(Engine& engine)          override;
     void onRender(Engine& engine)          override;
     void onShutdown(Engine& engine) override;
-    Coin& createCoin(float x, float y, float w, float h, int value = 1);
 
 private:
     Entity& createEntity(float x, float y, float w, float h,
@@ -25,8 +24,11 @@ private:
     void updateBullets(float);
     void removeBullets();
     void killPlayer();
+    void buildLevel();
 
-    Camera* m_Camera;
+    Coin& createCoin(float x, float y, float w, float h, int value = 1);
+
+    Camera* m_Camera = nullptr;
 
     GameAssets assets;
 

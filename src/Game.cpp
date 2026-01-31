@@ -19,8 +19,6 @@ static void renderCoin(SDL_Renderer* r, const Coin& c, const SpriteSheet& sheet,
 
 void Game::onInit(Engine& engine)
 {
-    m_Entities.clear();
-
     SDL_Renderer* r = engine.getRenderer();
 
         
@@ -32,33 +30,20 @@ void Game::onInit(Engine& engine)
     assets.coin.fps = 0.0f;
     assets.coin.loop = false;
 
-    // Create coins
-    createCoin(100, 400, 32, 32, 1);
-    createCoin(200, 400, 32, 32, 1);
+    // Ensure load/create once
+    if (!m_Camera) {
+        m_Camera = new Camera(1024, 768, 2000, 1500);
+    }
 
-
-    // ground
-    createEntity(0, 500, 1000, 50, 0, 0, 0, 255, 255);
-
-    // player
-    m_Player = {
-        200, 400, 50, 50,        // x,y,w,h
-        0, 0,                    // vx,vy
-        false,                   // isGrounded
-        255, 0, 0,               // color
-        100, 3, true             // health, lives, isAlive
-    };
-
-    m_Camera = new Camera(1024, 768, 2000, 1500);
-
-    m_HudFont = TTF_OpenFont("assets/fonts/Inter_24pt-Bold.ttf", 24);
     if (!m_HudFont) {
-        SDL_Log("TTF_OpenFont failed: %s", TTF_GetError());
+        m_HudFont = TTF_OpenFont("assets/fonts/Inter_24pt-Bold.ttf", 24);
+        if (!m_HudFont) SDL_Log("TTF_OpenFont failed: %s", TTF_GetError());
+        hud.init(r, m_HudFont);
     }
 
     hud.init(engine.getRenderer(), m_HudFont);
 
-
+    buildLevel();
     m_State = GameState::Playing;
     m_RequestedQuit = false;
 }
@@ -113,7 +98,7 @@ void Game::onUpdate(Engine& engine)
         m_Player.vy += GRAVITY * dt;
 
     // Shoot
-    if (kb[SDL_SCANCODE_E] && m_Player.shootCooldown == 0) {
+    if (kb[SDL_SCANCODE_E] && m_Player.shootCooldown <= 0) {
         shootBullet();
         m_Player.shootCooldown = 0.2f;
     }
@@ -239,6 +224,32 @@ void Game::onShutdown(Engine& engine)
 
 // -------- Game private helpers --------
 
+void Game::buildLevel()
+{
+    m_Entities.clear();
+    coins.clear();
+    bullets.clear();
+    score = 0;
+
+    // ground
+    createEntity(0, 500, 1000, 50, 0, 0, 0, 255, 255);
+
+    // coins
+    createCoin(100, 400, 32, 32, 1);
+    createCoin(200, 400, 32, 32, 1);
+
+    // player spawn (and whatever else should reset)
+    m_Player = {
+        200, 400, 50, 50,
+        0, 0,
+        false,
+        255, 0, 0,
+        100, 3, true
+    };
+    m_Player.shootCooldown = 0.0f;
+    m_Player.isAiming = false;
+}
+
 Entity& Game::createEntity(float x, float y, float w, float h,
     float vx, float vy,
     uint8_t r, uint8_t g, uint8_t b)
@@ -308,16 +319,7 @@ void Game::removeBullets() {
 
 void Game::resetGame()
 {
-    m_Entities.clear();
-    createEntity(0, 500, 1000, 50, 0, 0, 0, 255, 255);
-
-    m_Player = {
-        200, 400, 50, 50,
-        0, 0, false,
-        255, 0, 0,
-        100, 3, true
-    };
-
+    buildLevel();
     m_State = GameState::Playing;
     m_RequestedQuit = false;
 }
