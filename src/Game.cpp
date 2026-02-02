@@ -255,7 +255,8 @@ Entity& Game::createEntity(float x, float y, float w, float h,
 
 static void renderCoin(SDL_Renderer* r, const Coin& c, const SpriteSheet& sheet, int camX, int camY)
 {
-    SDL_Rect src{ c.frame * sheet.frameW, 0, sheet.frameW, sheet.frameH };
+    int frame = c.anim.absoluteFrame();
+    SDL_Rect src{ frame * sheet.frameW, 0, sheet.frameW, sheet.frameH };
     SDL_Rect dst{
         (int)c.body.x - camX,
         (int)c.body.y - camY,

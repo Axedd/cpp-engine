@@ -133,6 +133,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\Anim\AnimationClip.h" />
+    <ClInclude Include="include\Anim\Animator.h" />
     <ClInclude Include="include\Engine.h" />
     <ClInclude Include="include\Game.h" />
     <ClInclude Include="include\Game\Assets.h" />

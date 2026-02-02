@@ -1,4 +1,5 @@
 #pragma once
+#include "anim/Animator.h"
 #include <cstdint>
 
 enum class GameState {
@@ -59,8 +60,6 @@ struct Coin {
 	// score value
 	int value = 1;
 
-	// Animation state
-	int frame = 0;
-	float animTimer = 0.0f;
+	Animator anim;
 };
 

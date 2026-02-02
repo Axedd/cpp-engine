@@ -11,6 +11,8 @@
     <ClInclude Include="include\Game\Collision.h" />
     <ClInclude Include="include\ui\HUD.h" />
     <ClInclude Include="include\ui\TextLabel.h" />
+    <ClInclude Include="include\Anim\AnimationClip.h" />
+    <ClInclude Include="include\Anim\Animator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
