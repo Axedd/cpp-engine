@@ -1,10 +1,12 @@
 #pragma once
 #include "IGame.h"
-#include "Camera.h"
 #include "Game/GameTypes.h"
 #include "Game/Assets.h"
 #include "ui/HUD.h"
 #include <vector>
+#include <cstdint>
+
+class Camera;
 
 class Game : public IGame {
 public:

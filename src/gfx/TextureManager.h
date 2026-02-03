@@ -1,8 +1,10 @@
 #pragma once
-#include <SDL.h>
 #include <string>
 #include <unordered_map>
 
+// Forward declaration 
+struct SDL_Renderer;
+struct SDL_Texture;
 
 class TextureManager {
 public:

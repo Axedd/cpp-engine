@@ -4,6 +4,7 @@
 #include <iostream>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include "gfx/TextureManager.h"
 
 Engine::Engine() = default;
 

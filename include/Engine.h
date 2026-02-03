@@ -3,7 +3,6 @@
 #include <SDL.h>
 #include <memory>
 #include <cstdint>
-#include "gfx/TextureManager.h"
 
 class IGame; // forward declare
 class TextureManager;

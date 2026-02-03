@@ -1,9 +1,11 @@
 #include "Game.h"
 #include "Engine.h"   
 #include "Game/Collision.h"
+#include "Camera.h"
 #include <iostream>
 #include <cmath>
 #include <algorithm>
+#include "gfx/TextureManager.h"
 
 
 static constexpr float GRAVITY = 900.0f;
