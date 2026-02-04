@@ -1,7 +1,8 @@
 #pragma once
 #include <SDL.h>
-#include <SDL_ttf.h>
 #include <string>
+
+struct TTF_Font;
 
 
 class TextLabel {

@@ -1,4 +1,5 @@
 #include "ui/TextLabel.h"
+#include <SDL_ttf.h>
 
 TextLabel::~TextLabel() { destroy(); }
 
