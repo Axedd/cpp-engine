@@ -11,18 +11,24 @@ void TextLabel::destroy() {
 }
 
 void TextLabel::setText(SDL_Renderer* r, const std::string& text) {
-	if (text == m_Text) return;
-	m_Text = text;
+	if (text == m_Text || !m_Font) return;
 
-	destroy();
-	if (!m_Font) return;
-
-	SDL_Surface* s = TTF_RenderUTF8_Blended(m_Font, m_Text.c_str(), m_Color);
+	SDL_Surface* s = TTF_RenderUTF8_Blended(m_Font, text.c_str(), m_Color);
 	if (!s) return;
 
-	m_Tex = SDL_CreateTextureFromSurface(r, s);
-	m_W = s->w; m_H = s->h;
+	SDL_Texture* newTex = SDL_CreateTextureFromSurface(r, s);
+	int new_W = s->w; 
+	int new_H = s->h;
 	SDL_FreeSurface(s);
+
+	// Only update if new text is confirmed
+	if (newTex) {
+		destroy();
+		m_Tex = newTex;
+		m_W = new_W;
+		m_H = new_H;
+		m_Text = text;
+	}
 }
 
 void TextLabel::render(SDL_Renderer* r, int x, int y) const {
