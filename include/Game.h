@@ -37,6 +37,8 @@ private:
     HUD hud;
     TTF_Font* m_HudFont = nullptr;
 
+    AnimationClip m_CoinClip;
+
     std::vector<Coin> coins;
     Player              m_Player{};
     std::vector<Entity> m_Entities;

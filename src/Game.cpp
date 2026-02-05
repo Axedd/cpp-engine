@@ -23,14 +23,19 @@ void Game::onInit(Engine& engine)
 {
     SDL_Renderer* r = engine.getRenderer();
 
+    AnimationClip coinClip;
+
         
     // Coin
-    assets.coin.tex = engine.textures().load("coin", "assets/coin.png");
+    assets.coin.tex = engine.textures().load("coin", "assets/coin_anim.png");
     assets.coin.frameW = 32;
     assets.coin.frameH = 32;
-    assets.coin.frames = 1;
-    assets.coin.fps = 0.0f;
-    assets.coin.loop = false;
+
+    m_CoinClip.startFrame = 0;
+    m_CoinClip.frameCount = 6; // eller 7
+    m_CoinClip.fps = 9.0f;
+    m_CoinClip.loop = true;
+
 
     // Ensure load/create once
     if (!m_Camera) {
@@ -64,11 +69,20 @@ void Game::onUpdate(Engine& engine)
 
     m_Player.isAiming = false;
 
-    m_Camera->update(m_Player.x, m_Player.y, m_Player.w, m_Player.h, dt);
+    m_Camera->update(
+        (int)m_Player.x, (int)m_Player.y,
+        (int)m_Player.w, (int)m_Player.h,
+        dt
+    );
 
     if (m_State == GameState::GameOver) {
         if (kb[SDL_SCANCODE_R]) resetGame();
         return;
+    }
+
+    for (auto& c : coins) {
+        if (!c.collected)
+            c.anim.update(dt);
     }
 
     // horizontal
@@ -230,13 +244,16 @@ void Game::buildLevel()
     // ground
     createEntity(0, 500, 1000, 50, 0, 0, 0, 255, 255);
 
-    // coins
-    createCoin(100, 400, 32, 32, 1);
-    createCoin(200, 400, 32, 32, 1);
+    // coins (arc)
+    createCoin(100, 420, 32, 32, 1);
+    createCoin(132, 404, 32, 32, 1);
+    createCoin(164, 392, 32, 32, 1);
+    createCoin(196, 404, 32, 32, 1);
+    createCoin(228, 420, 32, 32, 1);
 
     // player spawn (and whatever else should reset)
     m_Player = {
-        200, 400, 50, 50,
+        400, 400, 50, 50,
         0, 0,
         false,
         255, 0, 0,
@@ -276,6 +293,8 @@ Coin& Game::createCoin(float x, float y, float w, float h, int value)
     c.body.w = w;
     c.body.h = h;
     c.value = value;
+
+    c.anim.play(&m_CoinClip, true);
 
     coins.push_back(c);
     return coins.back();
