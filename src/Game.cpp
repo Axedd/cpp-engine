@@ -32,7 +32,7 @@ void Game::onInit(Engine& engine)
     assets.coin.frameH = 32;
 
     m_CoinClip.startFrame = 0;
-    m_CoinClip.frameCount = 6; // eller 7
+    m_CoinClip.frameCount = 6; // or 7
     m_CoinClip.fps = 9.0f;
     m_CoinClip.loop = true;
 
@@ -127,19 +127,8 @@ void Game::onUpdate(Engine& engine)
     m_Player.isGrounded = false;
 
     updateBullets(dt);
-
-    // collisions
-    for (Entity& e : m_Entities) {
-        if (AABB(m_Player, e)) resolveCollision(m_Player, e);
-    }
-
-    for (Coin& c : coins) {
-        if (!c.collected && AABB(m_Player, c)) {
-            c.collected = true;
-            score += c.value;
-            std::cout << "Score: " << score << "\n";
-        }
-    }
+    
+    handleCollisions();
 
     // HUD data update
     HUDData data;
@@ -261,6 +250,21 @@ void Game::buildLevel()
     };
     m_Player.shootCooldown = 0.0f;
     m_Player.isAiming = false;
+}
+
+void Game::handleCollisions() {
+    // Collision with entities
+    for (Entity& e : m_Entities) {
+        if (AABB(m_Player, e)) resolveCollision(m_Player, e);
+    }
+
+    // Trigger/Collectibles
+    for (Coin& c : coins) {
+        if (!c.collected && AABB(m_Player, c)) {
+            c.collected = true;
+            score += c.value;
+        }
+    }
 }
 
 Entity& Game::createEntity(float x, float y, float w, float h,

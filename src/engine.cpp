@@ -108,7 +108,7 @@ void Engine::shutdown()
 {
     if (m_Game) {
         m_Game->onShutdown(*this);
-        m_Game = nullptr; // optional: undgå double cleanup
+        m_Game = nullptr; // optional: avoid double cleanup
     }
 
     if (m_Textures) {

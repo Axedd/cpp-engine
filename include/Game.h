@@ -27,6 +27,7 @@ private:
     void removeBullets();
     void killPlayer();
     void buildLevel();
+    void handleCollisions();
 
     Coin& createCoin(float x, float y, float w, float h, int value = 1);
 
