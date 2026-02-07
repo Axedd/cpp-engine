@@ -64,8 +64,13 @@ void Game::onUpdate(Engine& engine)
 {
     if (m_RequestedQuit) return;
 
-    const Uint8* kb = SDL_GetKeyboardState(nullptr);
     float dt = engine.getDeltaTime();
+    const Uint8* kb = SDL_GetKeyboardState(nullptr);
+
+    if (m_State == GameState::GameOver) {
+        if (kb[SDL_SCANCODE_R]) resetGame();
+        return;
+    }
 
     m_Player.isAiming = false;
 
@@ -74,11 +79,6 @@ void Game::onUpdate(Engine& engine)
         (int)m_Player.w, (int)m_Player.h,
         dt
     );
-
-    if (m_State == GameState::GameOver) {
-        if (kb[SDL_SCANCODE_R]) resetGame();
-        return;
-    }
 
     for (auto& c : coins) {
         if (!c.collected)
