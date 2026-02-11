@@ -13,6 +13,9 @@
     <ClInclude Include="include\ui\TextLabel.h" />
     <ClInclude Include="include\Anim\AnimationClip.h" />
     <ClInclude Include="include\Anim\Animator.h" />
+    <ClInclude Include="include\Engine\ECS\Registry.h" />
+    <ClInclude Include="include\Engine\ECS\ComponentPool.h" />
+    <ClInclude Include="include\Engine\ECS\Entity.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />

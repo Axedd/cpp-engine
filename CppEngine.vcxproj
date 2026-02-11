@@ -136,6 +136,9 @@
     <ClInclude Include="include\Anim\AnimationClip.h" />
     <ClInclude Include="include\Anim\Animator.h" />
     <ClInclude Include="include\Engine.h" />
+    <ClInclude Include="include\Engine\ECS\ComponentPool.h" />
+    <ClInclude Include="include\Engine\ECS\Entity.h" />
+    <ClInclude Include="include\Engine\ECS\Registry.h" />
     <ClInclude Include="include\Game.h" />
     <ClInclude Include="include\Game\Assets.h" />
     <ClInclude Include="include\Game\Collision.h" />
