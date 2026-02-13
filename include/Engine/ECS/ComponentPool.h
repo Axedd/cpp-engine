@@ -14,7 +14,7 @@ namespace Engine {
 
 	template<typename T>
 	class ComponentPool : public IComponentPool {
-
+	public:
 		// Veriadic template makes it possible to construct the components directly inside the vector
 		template<typename... Args>
 		T& emplace(uint32_t entity, Args&&... args) {
