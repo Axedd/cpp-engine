@@ -19,6 +19,7 @@ bool Engine::init(const char* title, int width, int height)
         return false;
     }
 
+
     m_Window = SDL_CreateWindow(
         title,
         SDL_WINDOWPOS_CENTERED,

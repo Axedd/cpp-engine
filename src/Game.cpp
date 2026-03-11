@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "Engine.h"   
 #include "Game/Collision.h"
+#include "Game/Components/Components.h"
 #include "Camera.h"
 #include <iostream>
 #include <cmath>
@@ -8,14 +9,13 @@
 #include "gfx/TextureManager.h"
 
 
+// physics
 static constexpr float GRAVITY = 900.0f;
 static constexpr float MOVE_SPEED = 200.0f;
 static constexpr float JUMP_SPEED = -300.0f;
 
 
-
-static void resolveCollision(Player& player, const Entity& block);
-static void renderCoin(SDL_Renderer* r, const Coin& c, const SpriteSheet& sheet, int camX, int camY);
+static void renderCoin(SDL_Renderer* r, ECS::Entity& c, const SpriteSheet& sheet, int camX, int camY);
 
 // -------- IGame overrides --------
 
@@ -24,6 +24,13 @@ void Game::onInit(Engine& engine)
     SDL_Renderer* r = engine.getRenderer();
 
     AnimationClip coinClip;
+
+    m_PlayerHandle = m_Registry.createEntity();
+
+    // Add components
+    m_PlayerHandle.add<Transform>(400.0f, 400.0f, 50.0f, 50.0f);
+    m_PlayerHandle.add<Velocity>(0.0f, 0.0f);
+    m_PlayerHandle.add<PlayerStats>(100, 3, true);
 
         
     // Coin
@@ -63,90 +70,70 @@ void Game::onEvent(const SDL_Event& e)
 void Game::onUpdate(Engine& engine)
 {
     if (m_RequestedQuit) return;
-
     float dt = engine.getDeltaTime();
     const Uint8* kb = SDL_GetKeyboardState(nullptr);
+
+    // ECS DATA
+    auto& transform = m_PlayerHandle.get<Transform>();
+    auto& vel = m_PlayerHandle.get<Velocity>();
+    auto& stats = m_PlayerHandle.get<PlayerStats>();
 
     if (m_State == GameState::GameOver) {
         if (kb[SDL_SCANCODE_R]) resetGame();
         return;
     }
 
-    m_Player.isAiming = false;
+    stats.isAiming = false;
+    m_Camera->update((int)transform.x, (int)transform.y, (int)transform.w, (int)transform.h, dt);
 
-    m_Camera->update(
-        (int)m_Player.x, (int)m_Player.y,
-        (int)m_Player.w, (int)m_Player.h,
-        dt
-    );
-
-    for (auto& c : coins) {
-        if (!c.collected)
-            c.anim.update(dt);
+    for (auto& c : m_CoinEntities) {
+        auto& cStats = c.get<CoinStats>();
+        auto& cAnim = c.get<Animator>();
+        if (!cStats.collected) cAnim.update(dt);
     }
 
-    // horizontal
-    m_Player.vx = 0.0f;
-    if (kb[SDL_SCANCODE_A]) {
-        m_Player.vx = -MOVE_SPEED;
-        m_Player.viewDir = Left;
-    }
-    if (kb[SDL_SCANCODE_D]) {
-        m_Player.vx = MOVE_SPEED;
-        m_Player.viewDir = Right;
-    }
+    // Movement
+    vel.vx = 0.0f;
+    if (kb[SDL_SCANCODE_A]) { vel.vx = -MOVE_SPEED; stats.viewDir = Left; }
+    if (kb[SDL_SCANCODE_D]) { vel.vx = MOVE_SPEED; stats.viewDir = Right; }
 
-    // jump
-    if (kb[SDL_SCANCODE_SPACE] && m_Player.isGrounded) {
-        m_Player.vy = JUMP_SPEED;
-        m_Player.isGrounded = false;
+    if (kb[SDL_SCANCODE_SPACE] && vel.isGrounded) {
+        vel.vy = JUMP_SPEED;
+        vel.isGrounded = false;
     }
 
-    // m_Camera->shake(20.0f, 5.0f);
+    if (!vel.isGrounded) vel.vy += GRAVITY * dt;
 
-    // gravity
-    if (!m_Player.isGrounded)
-        m_Player.vy += GRAVITY * dt;
+    transform.x += vel.vx * dt;
+    transform.y += vel.vy * dt;
 
     // Shoot
-    if (kb[SDL_SCANCODE_E] && m_Player.shootCooldown <= 0) {
+    if (kb[SDL_SCANCODE_E] && stats.shootCooldown <= 0) {
         shootBullet();
-        m_Player.shootCooldown = 0.2f;
+        stats.shootCooldown = 0.2f;
     }
-
-    if (kb[SDL_SCANCODE_K]) m_Player.isAiming = true;
-
-    // integrate
-    m_Player.x += m_Player.vx * dt;
-    m_Player.y += m_Player.vy * dt;
-
-    m_Player.shootCooldown -= dt;
-    if (m_Player.shootCooldown < 0) m_Player.shootCooldown = 0;
-
-
-    m_Player.isGrounded = false;
+    if (kb[SDL_SCANCODE_K]) stats.isAiming = true;
+    if (stats.shootCooldown > 0) stats.shootCooldown -= dt;
 
     updateBullets(dt);
-    
     handleCollisions();
 
     // HUD data update
     HUDData data;
     data.score = score;
-    data.health = m_Player.health;
-    data.lives = m_Player.lives;
-
+    data.health = stats.health;
+    data.lives = stats.lives;
     hud.update(engine.getRenderer(), data);
 
-    // simple fell off world
-    if (m_Player.y > 800.0f) {
-        killPlayer();
-    }
+    if (transform.y > 800.0f) killPlayer();
 }
 
 void Game::onRender(Engine& engine)
 {
     SDL_Renderer* r = engine.getRenderer();
+
+    auto& transform = m_PlayerHandle.get<Transform>();
+    auto& stats = m_PlayerHandle.get<PlayerStats>();
 
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderClear(r);
@@ -154,55 +141,73 @@ void Game::onRender(Engine& engine)
     int camX = m_Camera->getRenderX();
     int camY = m_Camera->getRenderY();
 
-    // 1. Render Player (Subtract camera offset)
-    SDL_Rect p{ (int)m_Player.x - camX,
-                (int)m_Player.y - camY,
-                (int)m_Player.w,
-                (int)m_Player.h };
-    SDL_SetRenderDrawColor(r, m_Player.r, m_Player.g, m_Player.b, 255);
+    SDL_Rect p{ (int)transform.x - camX, (int)transform.y - camY, (int)transform.w, (int)transform.h };
+    SDL_SetRenderDrawColor(r, 255, 0, 0, 255); 
     SDL_RenderFillRect(r, &p);
 
-    // 2. Render Entities (Subtract camera offset)
-    for (const Entity& e : m_Entities) {
-        SDL_Rect rect{ (int)e.x - camX,
-                       (int)e.y - camY,
-                       (int)e.w,
-                       (int)e.h };
-        SDL_SetRenderDrawColor(r, e.r, e.g, e.b, 255);
+    // Render entities and subtract camera offset
+    for (auto& e : m_Entities) {
+        auto& transform = e.get<Transform>();
+        auto& sprite = e.get<Sprite>();
+
+        SDL_Rect rect{ 
+            (int)transform.x - camX, 
+            (int)transform.y - camY, 
+            (int)transform.w, 
+            (int)transform.h 
+        };
+        SDL_SetRenderDrawColor(r, sprite.r, sprite.g, sprite.b, 255);
         SDL_RenderFillRect(r, &rect);
     }
 
-    // 3. Render Aiming UI/Effect (Subtract camera offset)
-    if (m_Player.isAiming) {
-        float spawnX = (m_Player.viewDir == Right) ? m_Player.x + m_Player.w : m_Player.x - m_Player.w;
-        float spawnY = m_Player.y + m_Player.h / 2 - 10;
 
-        SDL_Rect rect{ (int)spawnX - camX, (int)spawnY - camY, 10, 10 };
-        SDL_Rect rect2{ (int)spawnX + 20 - camX, (int)spawnY - camY, 10, 10 };
-        SDL_Rect rect3{ (int)spawnX + 40 - camX, (int)spawnY - camY, 10, 10 };
 
-        SDL_SetRenderDrawColor(r, 255, 0, 0, 255);
+    auto& pt = m_PlayerHandle.get<Transform>();
+    SDL_Rect pRect{ (int)pt.x - camX, (int)pt.y - camY, (int)pt.w, (int)pt.h };
+    SDL_SetRenderDrawColor(r, 255, 0, 0, 255);
+    SDL_RenderFillRect(r, &pRect);
+
+
+    for (auto& b : m_BulletEntities) {
+        auto& transform = b.get<Transform>();
+
+        // for sprite asset (bullet)
+        auto& sprite = b.get<Sprite>();
+
+        SDL_Rect rect{
+            (int)transform.x - camX,
+            (int)transform.y - camY,
+            (int)transform.w,
+            (int)transform.h
+        };
+
+        // Brug farven fra Sprite-komponenten
+        SDL_SetRenderDrawColor(r, sprite.r, sprite.g, sprite.b, 255);
         SDL_RenderFillRect(r, &rect);
-        SDL_RenderFillRect(r, &rect2);
-        SDL_RenderFillRect(r, &rect3);
+    }
+    for (auto& c : m_CoinEntities) {
+        auto& t = c.get<Transform>();
+        auto& anim = c.get<Animator>();
+
+        int frame = anim.absoluteFrame();
+        SDL_Rect src{ frame * assets.coin.frameW, 0, assets.coin.frameW, assets.coin.frameH };
+        SDL_Rect dst{ (int)t.x - camX, (int)t.y - camY, (int)t.w, (int)t.h };
+
+        SDL_RenderCopy(r, assets.coin.tex, &src, &dst);
+    }
+
+    for (auto& b : m_BulletEntities) {
+        auto& t = b.get<Transform>();
+        auto& s = b.get<Sprite>();
+        SDL_Rect rect{ (int)t.x - camX, (int)t.y - camY, (int)t.w, (int)t.h };
+        SDL_SetRenderDrawColor(r, s.r, s.g, s.b, 255);
+        SDL_RenderFillRect(r, &rect);
     }
 
 
-
-    // 4. Render Bullets (Subtract camera offset)
-    for (const Bullet& b : bullets) {
-        Entity body = b.body;
-        SDL_Rect rect{ (int)body.x - camX,
-                       (int)body.y - camY,
-                       (int)body.w,
-                       (int)body.h };
-        SDL_SetRenderDrawColor(r, body.r, body.g, body.b, 255);
-        SDL_RenderFillRect(r, &rect);
+    for (auto& c : m_CoinEntities) {
+        renderCoin(r, c, assets.coin, camX, camY);
     }
-
-    for (const auto& c : coins)
-        if (!c.collected)
-            renderCoin(r, c, assets.coin, camX, camY);
 
     hud.render(r, 1024, 768);
 
@@ -225,117 +230,145 @@ void Game::onShutdown(Engine& engine)
 
 void Game::buildLevel()
 {
+    // total reset of reigstry
+    m_Registry.clear();
+
     m_Entities.clear();
-    coins.clear();
-    bullets.clear();
+    m_CoinEntities.clear();
+    m_BulletEntities.clear();
     score = 0;
 
-    // ground
-    createEntity(0, 500, 1000, 50, 0, 0, 0, 255, 255);
+    // recreate player
+    m_PlayerHandle = m_Registry.createEntity();
 
-    // coins (arc)
-    createCoin(100, 420, 32, 32, 1);
-    createCoin(132, 404, 32, 32, 1);
-    createCoin(164, 392, 32, 32, 1);
-    createCoin(196, 404, 32, 32, 1);
-    createCoin(228, 420, 32, 32, 1);
+    // add player components
+    m_PlayerHandle.add<Transform>(400.0f, 400.0f, 50.0f, 50.0f);
+    m_PlayerHandle.add<Velocity>(0.0f, 0.0f);
+    m_PlayerHandle.add<PlayerStats>(100, 3, true);
 
-    // player spawn (and whatever else should reset)
-    m_Player = {
-        400, 400, 50, 50,
-        0, 0,
-        false,
-        255, 0, 0,
-        100, 3, true
-    };
-    m_Player.shootCooldown = 0.0f;
-    m_Player.isAiming = false;
-}
+    // Build the level 
 
-void Game::handleCollisions() {
-    // Collision with entities
-    for (Entity& e : m_Entities) {
-        if (AABB(m_Player, e)) resolveCollision(m_Player, e);
+    createEntity(0, 600, 2000, 50, 100, 100, 100); // Long platform
+    createEntity(200, 450, 200, 20, 100, 100, 100); // small floating platform
+
+    // Create coins
+    createCoin(300, 400, 32, 32, 10);
+    createCoin(400, 400, 32, 32, 10);
+    createCoin(500, 400, 32, 32, 10);
+
+    // Optional: reset camera
+    if (m_Camera) {
+        // Make camera face player imediately 
+        auto& t = m_PlayerHandle.get<Transform>();
+        m_Camera->update((int)t.x, (int)t.y, (int)t.w, (int)t.h, 0.0f);
     }
 
-    // Trigger/Collectibles
-    for (Coin& c : coins) {
-        if (!c.collected && AABB(m_Player, c)) {
-            c.collected = true;
-            score += c.value;
+    SDL_Log("Level build complete. Registry and entities reset.");
+}
+void Game::handleCollisions() {
+    auto& pTrans = m_PlayerHandle.get<Transform>();
+    auto& pVel = m_PlayerHandle.get<Velocity>();
+
+    // Player against the floor
+    for (auto& e : m_Entities) {
+        auto& blockTrans = e.get<Transform>();
+        if (AABB(pTrans, blockTrans)) {
+            resolveCollision(pTrans, pVel, blockTrans);
+        }
+    }
+
+    // Player against coins
+    for (auto it = m_CoinEntities.begin(); it != m_CoinEntities.end();) {
+        auto& coinTrans = it->get<Transform>();
+        if (AABB(pTrans, coinTrans)) {
+            score += 10;
+            m_Registry.destroy(it->getId()); // Delete from ECS pools
+            it = m_CoinEntities.erase(it);   // remove from the list of coins
+        }
+        else {
+            ++it;
         }
     }
 }
 
-Entity& Game::createEntity(float x, float y, float w, float h,
-    float vx, float vy,
-    uint8_t r, uint8_t g, uint8_t b)
+ECS::Entity& Game::createEntity(float x, float y, float w, float h, uint8_t r, uint8_t g, uint8_t b)
 {
-    Entity e{ x, y, w, h, vx, vy, r, g, b };
+    ECS::Entity e = m_Registry.createEntity();
+
+    // Add components data
+    e.add<Transform>(x, y, w, h);
+    e.add<Sprite>(r, g, b);
+
     m_Entities.push_back(e);
     return m_Entities.back();
 }
 
-static void renderCoin(SDL_Renderer* r, const Coin& c, const SpriteSheet& sheet, int camX, int camY)
-{
-    int frame = c.anim.absoluteFrame();
+static void renderCoin(SDL_Renderer* r, ECS::Entity& c, const SpriteSheet& sheet, int camX, int camY) {
+    auto& t = c.get<Transform>();
+    auto& anim = c.get<Animator>(); 
+
+    int frame = anim.absoluteFrame();
     SDL_Rect src{ frame * sheet.frameW, 0, sheet.frameW, sheet.frameH };
-    SDL_Rect dst{
-        (int)c.body.x - camX,
-        (int)c.body.y - camY,
-        (int)c.body.w,
-        (int)c.body.h
-    };
+    SDL_Rect dst{ (int)t.x - camX, (int)t.y - camY, (int)t.w, (int)t.h };
     SDL_RenderCopy(r, sheet.tex, &src, &dst);
 }
 
-Coin& Game::createCoin(float x, float y, float w, float h, int value)
-{
-    Coin c{};
-    c.body.x = x;
-    c.body.y = y;
-    c.body.w = w;
-    c.body.h = h;
-    c.value = value;
+void Game::createCoin(float x, float y, float w, float h, int value) {
+    ECS::Entity c = m_Registry.createEntity();
 
-    c.anim.play(&m_CoinClip, true);
+    c.add<Transform>(x, y, w, h);
+    c.add<CoinStats>(value);
 
-    coins.push_back(c);
-    return coins.back();
+    // run coin animation
+    auto& anim = c.add<Animator>();
+    anim.play(&m_CoinClip, true);
+
+    m_CoinEntities.push_back(c);
 }
-
 
 void Game::shootBullet() {
-    float spawnX = (m_Player.viewDir == Right)
-        ? m_Player.x + m_Player.w
-        : m_Player.x - 20;
+    auto& pTrans = m_PlayerHandle.get<Transform>();
+    auto& pStats = m_PlayerHandle.get<PlayerStats>();
 
-    float spawnY = m_Player.y + m_Player.h / 2 - 10;
+    float spawnX = (pStats.viewDir == Right) ? pTrans.x + pTrans.w : pTrans.x - 20;
 
-    Entity e = Entity(spawnX, spawnY, 20, 20, 500, 0, 255, 0, 0);
-    Bullet bulletEntity = { e , 0.2f, m_Player.viewDir};
-    bullets.push_back(bulletEntity);
+    // Bullets are made as ECS entities
+    ECS::Entity b = m_Registry.createEntity();
+    b.add<Transform>(spawnX, pTrans.y + 15, 10.0f, 10.0f);
+    b.add<Velocity>((pStats.viewDir == Right ? 500.0f : -500.0f), 0.0f);
+    b.add<Lifetime>(1.5f);
+    b.add<Sprite>(255, 255, 0);
+
+    m_BulletEntities.push_back(b);
 }
+void Game::updateBullets(float dt) {
+    // Iterator to safely remove bullets when going over the list
+    for (auto it = m_BulletEntities.begin(); it != m_BulletEntities.end();) {
+        
+        // Get components from the registry (it is a pointer to an ECS::Entity)
+        auto& l = it->get<Lifetime>();
+        auto& t = it->get<Transform>();
+        auto& v = it->get<Velocity>();
 
-void Game::updateBullets(float dt)
-{
-    for (auto& b : bullets) {
-        b.lifetime -= dt;
+        // Update the data
+        l.value -= dt;            
+        t.x += v.vx * dt;         // move along x-axis
+        t.y += v.vy * dt;         // move along y-axis
 
-        if (b.dir == Right) b.body.x += b.body.vx * dt;
-        else               b.body.x -= b.body.vx * dt;
+        // check if bullets needs to be destroyed
+        if (l.value <= 0.0f) {
+
+            m_Registry.destroy(it->getId()); 
+            
+            it = m_BulletEntities.erase(it); 
+        } 
+        else {
+
+            ++it;
+        }
     }
-
-    removeBullets(); // Call once (prevents invalidation of b in iterator)
 }
 
-void Game::removeBullets() {
-    bullets.erase(
-        std::remove_if(bullets.begin(), bullets.end(),
-            [](const Bullet& b) { return b.lifetime <= 0; }),
-        bullets.end()
-    );
-}
 
 void Game::resetGame()
 {
@@ -344,63 +377,17 @@ void Game::resetGame()
     m_RequestedQuit = false;
 }
 
-void Game::killPlayer()
-{
-    if (!m_Player.isAlive) return;
+void Game::killPlayer() {
+    // Get data directly from the source
+    auto& stats = m_PlayerHandle.get<PlayerStats>();
+    auto& transform = m_PlayerHandle.get<Transform>();
 
-    m_Player.lives--;
-    m_Player.isAlive = false;
-
-    if (m_Player.lives <= 0) {
+    stats.lives--;
+    if (stats.lives <= 0) {
         m_State = GameState::GameOver;
     }
     else {
-        // simple respawn
-        m_Player.x = 200;
-        m_Player.y = 400;
-        m_Player.vx = 0;
-        m_Player.vy = 0;
-        m_Player.isAlive = true;
-        m_Player.isGrounded = false;
+        transform.x = 400; // Reset position
+        transform.y = 400;
     }
 }
-
-// If collision is detected (AABB function) 
-// We correct the entity in space with resolveCollision()
-static void resolveCollision(Player& player, const Entity& block)
-{
-    float px = player.x + player.w * 0.5f;
-    float py = player.y + player.h * 0.5f;
-    float bx = block.x + block.w * 0.5f;
-    float by = block.y + block.h * 0.5f;
-
-    float overlapX = (player.w * 0.5f + block.w * 0.5f) - std::fabs(px - bx);
-    float overlapY = (player.h * 0.5f + block.h * 0.5f) - std::fabs(py - by);
-
-    if (overlapX < overlapY) {
-        // Horizontal push
-        if (px < bx) player.x -= overlapX;
-        else         player.x += overlapX;
-        player.vx = 0.0f;
-    }
-    else {
-        // Vertical push based on direction
-        if (player.vy > 0.0f) {
-            // Landing on top
-            player.y = block.y - player.h;
-            player.vy = 0.0f;
-            player.isGrounded = true;
-        }
-        else if (player.vy < 0.0f) {
-            // Hitting the bottom
-            player.y = block.y + block.h;
-            player.vy = 0.0f;
-        }
-        else {
-            // Fallback (rare)
-            if (py < by) player.y -= overlapY;
-            else         player.y += overlapY;
-        }
-    }
-}
-

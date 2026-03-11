@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace Engine {
+namespace ECS {
 	class IComponentPool {
 	public:
 		virtual ~IComponentPool() = default;
@@ -21,7 +21,7 @@ namespace Engine {
 
 			if (entity >= m_Sparse.size()) {
 				// increase m_Sparse to accomodate entity and fill empty spaces with 0xFFFFFFFF 
-				m_Sparse.resize(entity + 1, 0xFFFFFFFF) 
+				m_Sparse.resize(entity + 1, 0xFFFFFFFF);
 			}
 		
 			// Entity ID => position in m_Components
@@ -44,7 +44,7 @@ namespace Engine {
 
 		void remove(uint32_t entity) override {
 			// Ensure we are working with a valid entity
-			if (entity >= m_Sparse.size() || m_Sparse[entity] = 0xFFFFFFFF){
+			if (entity >= m_Sparse.size() || m_Sparse[entity] == 0xFFFFFFFF) {
 				return;
 			}
 
@@ -69,6 +69,9 @@ namespace Engine {
 			m_DenseEntities.pop_back();
 		}
 
+		bool has(uint32_t entity) const {
+			return entity < m_Sparse.size() && m_Sparse[entity] != 0xFFFFFFFF;
+		}
 		
 
 	private:

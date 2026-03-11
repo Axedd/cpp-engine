@@ -2,6 +2,7 @@
 #include "IGame.h"
 #include "Game/GameTypes.h"
 #include "Game/Assets.h"
+#include "Engine/ECS/Registry.h"
 #include "ui/HUD.h"
 #include <vector>
 #include <cstdint>
@@ -17,19 +18,19 @@ public:
     void onShutdown(Engine& engine) override;
 
 private:
-    Entity& createEntity(float x, float y, float w, float h,
-        float vx, float vy,
-        std::uint8_t r, std::uint8_t g, std::uint8_t b);
+    ECS::Registry m_Registry;
+    ECS::Entity m_PlayerHandle;
+
+    ECS::Entity& createEntity(float x, float y, float w, float h, uint8_t r, uint8_t g, uint8_t b);
 
     void resetGame();
     void shootBullet();
     void updateBullets(float);
-    void removeBullets();
     void killPlayer();
     void buildLevel();
     void handleCollisions();
 
-    Coin& createCoin(float x, float y, float w, float h, int value = 1);
+    void createCoin(float x, float y, float w, float h, int value);
 
     Camera* m_Camera = nullptr;
 
@@ -40,11 +41,10 @@ private:
 
     AnimationClip m_CoinClip;
 
-    std::vector<Coin> coins;
-    Player              m_Player{};
-    std::vector<Entity> m_Entities;
+    std::vector<ECS::Entity> m_Entities;
+    std::vector<ECS::Entity> m_BulletEntities;
+    std::vector<ECS::Entity> m_CoinEntities;
     GameState           m_State = GameState::Playing;
-    std::vector<Bullet> bullets;
     bool                m_RequestedQuit = false;
     int score = 0;
 };

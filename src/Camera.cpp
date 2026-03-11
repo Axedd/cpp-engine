@@ -23,11 +23,11 @@ void Camera::shake(float magnitude, float duration) {
 }
 
 void Camera::update(int targetX, int targetY, int targetW, int targetH, float deltaTime) {
-    // 1. Center the camera on the target
+    // Center the camera on the target
     m_x = (targetX + targetW / 2.0f) - (m_w / 2.0f); 
     m_y = (targetY + targetH / 2.0f) - (m_h / 2.0f);
 
-    // 2. Clamp to level boundaries
+    // Clamp to level boundaries
     if (m_x < 0) m_x = 0;
     if (m_y < 0) m_y = 0;
     if (m_x > m_levelWidth - m_w) m_x = (float)(m_levelWidth - m_w);
