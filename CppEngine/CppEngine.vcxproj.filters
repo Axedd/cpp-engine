@@ -29,5 +29,6 @@
     <ClCompile Include="src\ui\TextLabel.cpp" />
     <ClCompile Include="include\Engine\Resources\ResourceManager.cpp" />
     <ClCompile Include="C:\Users\frede\Downloads\glad\src\glad.c" />
+    <ClCompile Include="src\gfx\Shader.cpp" />
   </ItemGroup>
 </Project>

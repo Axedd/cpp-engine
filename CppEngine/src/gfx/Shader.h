@@ -28,7 +28,7 @@ public:
 
 
 private:
-	void readFile();
+	std::string readFile(std::string pat);
 	std::string vertexPath;
 	std::string fragmentPath;
 
