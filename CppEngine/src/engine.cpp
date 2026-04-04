@@ -39,7 +39,7 @@ bool Engine::init(const char* title, int width, int height)
 
     // create OpenGL context (for GPU memory)
     m_GLContext = SDL_GL_CreateContext(m_Window);
-
+    
     if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
         std::cout << "ERROR: Could not initialize GLAD!" << std::endl;
         return false;

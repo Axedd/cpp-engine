@@ -148,6 +148,7 @@
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\ui\HUD.h" />
     <ClInclude Include="include\ui\TextLabel.h" />
+    <ClInclude Include="src\gfx\Shader.h" />
     <ClInclude Include="src\gfx\TextureManager.h" />
   </ItemGroup>
   <ItemGroup>

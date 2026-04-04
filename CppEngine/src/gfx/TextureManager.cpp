@@ -3,7 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
-#include "AssetFormat.h" // Din "Menu"
+#include "AssetFormat.h"
 
 TextureManager::TextureManager() {}
 
