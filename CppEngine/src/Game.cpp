@@ -12,7 +12,7 @@
 // physics
 static constexpr float GRAVITY = 900.0f;
 static constexpr float MOVE_SPEED = 200.0f;
-static constexpr float JUMP_SPEED = -300.0f;
+static constexpr float JUMP_SPEED = -600.0f;
 
 
 static void renderCoin(SDL_Renderer* r, ECS::Entity& c, const SpriteSheet& sheet, int camX, int camY);
@@ -83,6 +83,9 @@ void Game::onUpdate(Engine& engine)
         return;
     }
 
+    bool canJump = vel.isGrounded;
+    vel.isGrounded = false;
+
     stats.isAiming = false;
     m_Camera->update((int)transform.x, (int)transform.y, (int)transform.w, (int)transform.h, dt);
 
@@ -93,13 +96,13 @@ void Game::onUpdate(Engine& engine)
     }
 
     // Movement
+
     vel.vx = 0.0f;
     if (kb[SDL_SCANCODE_A]) { vel.vx = -MOVE_SPEED; stats.viewDir = Left; }
     if (kb[SDL_SCANCODE_D]) { vel.vx = MOVE_SPEED; stats.viewDir = Right; }
 
-    if (kb[SDL_SCANCODE_SPACE] && vel.isGrounded) {
+    if (kb[SDL_SCANCODE_SPACE] && canJump) {
         vel.vy = JUMP_SPEED;
-        vel.isGrounded = false;
     }
 
     if (!vel.isGrounded) vel.vy += GRAVITY * dt;

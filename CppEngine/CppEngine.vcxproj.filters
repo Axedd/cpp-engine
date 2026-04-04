@@ -16,6 +16,7 @@
     <ClInclude Include="include\Engine\ECS\Registry.h" />
     <ClInclude Include="include\Engine\ECS\ComponentPool.h" />
     <ClInclude Include="include\Engine\ECS\Entity.h" />
+    <ClInclude Include="include\Engine\Resources\ResourceManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
@@ -25,5 +26,6 @@
     <ClCompile Include="src\gfx\TextureManager.cpp" />
     <ClCompile Include="src\ui\HUD.cpp" />
     <ClCompile Include="src\ui\TextLabel.cpp" />
+    <ClCompile Include="include\Engine\Resources\ResourceManager.cpp" />
   </ItemGroup>
 </Project>

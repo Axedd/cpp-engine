@@ -14,4 +14,4 @@ struct SpriteSheet {
 
 struct GameAssets {
 	SpriteSheet coin;
-};
+};	
