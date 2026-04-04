@@ -16,7 +16,7 @@ unsigned int TextureManager::load(const std::string& id, const std::string& path
     // Open .asset file
     std::ifstream file(path, std::ios::binary);
     if (!file.is_open()) {
-        std::cout << "Kunne ikke finde filen: " << path << std::endl;
+        std::cout << "Could not find the file: " << path << std::endl;
         return 0;
     }
 
@@ -25,7 +25,7 @@ unsigned int TextureManager::load(const std::string& id, const std::string& path
     file.read((char*)&mainHeader, sizeof(AssetHeader));
 
     if (mainHeader.magic != ASSET_MAGIC || mainHeader.type != AssetType::Texture) {
-        std::cout << "Fejl: Ugyldigt asset format i " << path << std::endl;
+        std::cout << "Error: Invalid asset format in " << path << std::endl;
         return 0;
     }
 
