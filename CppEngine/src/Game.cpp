@@ -21,9 +21,6 @@ static void renderCoin(SDL_Renderer* r, ECS::Entity& c, const SpriteSheet& sheet
 
 void Game::onInit(Engine& engine)
 {
-    SDL_Renderer* r = engine.getRenderer();
-
-    AnimationClip coinClip;
 
     m_PlayerHandle = m_Registry.createEntity();
 
@@ -34,12 +31,12 @@ void Game::onInit(Engine& engine)
 
         
     // Coin
-    assets.coin.tex = engine.textures().load("coin", "assets/coin_anim.png");
+    assets.coin.textureID = engine.textures().load("coin", "coin.asset");
     assets.coin.frameW = 32;
     assets.coin.frameH = 32;
 
     m_CoinClip.startFrame = 0;
-    m_CoinClip.frameCount = 6; // or 7
+    m_CoinClip.frameCount = 6;
     m_CoinClip.fps = 9.0f;
     m_CoinClip.loop = true;
 
@@ -51,8 +48,12 @@ void Game::onInit(Engine& engine)
 
     if (!m_HudFont) {
         m_HudFont = TTF_OpenFont("assets/fonts/Inter_24pt-Bold.ttf", 24);
-        if (!m_HudFont) SDL_Log("TTF_OpenFont failed: %s", TTF_GetError());
-        hud.init(r, m_HudFont);
+        if (!m_HudFont) {
+            SDL_Log("TTF_OpenFont failed: %s", TTF_GetError());
+        }
+        else {
+            // hud.init(r, m_HudFont); <-- commented out for now
+        }
     }
 
     buildLevel();
@@ -126,95 +127,55 @@ void Game::onUpdate(Engine& engine)
     data.score = score;
     data.health = stats.health;
     data.lives = stats.lives;
-    hud.update(engine.getRenderer(), data);
+    //hud.update(NULL, data);
 
     if (transform.y > 800.0f) killPlayer();
 }
 
 void Game::onRender(Engine& engine)
 {
-    SDL_Renderer* r = engine.getRenderer();
-
-    auto& transform = m_PlayerHandle.get<Transform>();
-    auto& stats = m_PlayerHandle.get<PlayerStats>();
-
-    SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
-    SDL_RenderClear(r);
-
+    // Get camera offsets for world-to-screen translation
     int camX = m_Camera->getRenderX();
     int camY = m_Camera->getRenderY();
 
-    SDL_Rect p{ (int)transform.x - camX, (int)transform.y - camY, (int)transform.w, (int)transform.h };
-    SDL_SetRenderDrawColor(r, 255, 0, 0, 255); 
-    SDL_RenderFillRect(r, &p);
+    // ------------
+    // RENDER LOGIC
+    // ------------
+    // Note: All SDL_Render calls have been removed as they require SDL_Renderer
+    // OpenGL rendering requires a shader program and vertex buffer (VAO/VBO)
+    // the loops below are preserved so we can implement draw calls later
 
-    // Render entities and subtract camera offset
+    // Player Rendering
+    auto& pTransform = m_PlayerHandle.get<Transform>();
+    // Future: Renderer::DrawQuad(pTransform.x - camX, pTransform.y - camY, pTransform.w, pTransform.h, color);
+
+    // Static World Entities (Platforms)
     for (auto& e : m_Entities) {
-        auto& transform = e.get<Transform>();
-        auto& sprite = e.get<Sprite>();
-
-        SDL_Rect rect{ 
-            (int)transform.x - camX, 
-            (int)transform.y - camY, 
-            (int)transform.w, 
-            (int)transform.h 
-        };
-        SDL_SetRenderDrawColor(r, sprite.r, sprite.g, sprite.b, 255);
-        SDL_RenderFillRect(r, &rect);
+        auto& t = e.get<Transform>();
+        auto& s = e.get<Sprite>();
+        // Future: Renderer::DrawQuad(t.x - camX, t.y - camY, t.w, t.h, {s.r, s.g, s.b});
     }
 
-
-
-    auto& pt = m_PlayerHandle.get<Transform>();
-    SDL_Rect pRect{ (int)pt.x - camX, (int)pt.y - camY, (int)pt.w, (int)pt.h };
-    SDL_SetRenderDrawColor(r, 255, 0, 0, 255);
-    SDL_RenderFillRect(r, &pRect);
-
-
+    // Bullets
     for (auto& b : m_BulletEntities) {
-        auto& transform = b.get<Transform>();
-
-        // for sprite asset (bullet)
-        auto& sprite = b.get<Sprite>();
-
-        SDL_Rect rect{
-            (int)transform.x - camX,
-            (int)transform.y - camY,
-            (int)transform.w,
-            (int)transform.h
-        };
-
-        // Brug farven fra Sprite-komponenten
-        SDL_SetRenderDrawColor(r, sprite.r, sprite.g, sprite.b, 255);
-        SDL_RenderFillRect(r, &rect);
+        auto& t = b.get<Transform>();
+        auto& s = b.get<Sprite>();
+        // Future: Renderer::DrawQuad(t.x - camX, t.y - camY, t.w, t.h, {s.r, s.g, s.b});
     }
+
+    // Coins (Animated Sprites)
     for (auto& c : m_CoinEntities) {
         auto& t = c.get<Transform>();
         auto& anim = c.get<Animator>();
 
         int frame = anim.absoluteFrame();
-        SDL_Rect src{ frame * assets.coin.frameW, 0, assets.coin.frameW, assets.coin.frameH };
-        SDL_Rect dst{ (int)t.x - camX, (int)t.y - camY, (int)t.w, (int)t.h };
+        unsigned int textureID = assets.coin.textureID;
 
-        SDL_RenderCopy(r, assets.coin.tex, &src, &dst);
+        // Future: Renderer::DrawSprite(textureID, t.x - camX, t.y - camY, t.w, t.h, frame, assets.coin.frameW);
     }
 
-    for (auto& b : m_BulletEntities) {
-        auto& t = b.get<Transform>();
-        auto& s = b.get<Sprite>();
-        SDL_Rect rect{ (int)t.x - camX, (int)t.y - camY, (int)t.w, (int)t.h };
-        SDL_SetRenderDrawColor(r, s.r, s.g, s.b, 255);
-        SDL_RenderFillRect(r, &rect);
-    }
-
-
-    for (auto& c : m_CoinEntities) {
-        renderCoin(r, c, assets.coin, camX, camY);
-    }
-
-    hud.render(r, 1024, 768);
-
-    SDL_RenderPresent(r);
+    // HUD
+    // Note: hud.render(r, ...) is disabled until an OpenGL-compatible UI path is created.
 }
 
 void Game::onShutdown(Engine& engine)
@@ -306,14 +267,27 @@ ECS::Entity& Game::createEntity(float x, float y, float w, float h, uint8_t r, u
     return m_Entities.back();
 }
 
-static void renderCoin(SDL_Renderer* r, ECS::Entity& c, const SpriteSheet& sheet, int camX, int camY) {
+static void renderCoin(ECS::Entity& c, const SpriteSheet& sheet, int camX, int camY) {
     auto& t = c.get<Transform>();
-    auto& anim = c.get<Animator>(); 
+    auto& anim = c.get<Animator>();
 
     int frame = anim.absoluteFrame();
-    SDL_Rect src{ frame * sheet.frameW, 0, sheet.frameW, sheet.frameH };
-    SDL_Rect dst{ (int)t.x - camX, (int)t.y - camY, (int)t.w, (int)t.h };
-    SDL_RenderCopy(r, sheet.tex, &src, &dst);
+
+    // Calculate world-to-screen position
+    int screenX = (int)t.x - camX;
+    int screenY = (int)t.y - camY;
+
+    // Use the OpenGL Texture ID from the sheet
+    unsigned int textureID = sheet.textureID;
+
+    // ----------------------------
+    // OPENGL DRAW CALL PLACEHOLDER
+    // ----------------------------
+    // SDL_RenderCopy is removed as it is incompatible with the OpenGL pipeline
+    // to render this we will need to pass the textureID, position, and 
+    // current frame data to a shader program
+    // Future implementation:
+    // Renderer::DrawSprite(textureID, screenX, screenY, (int)t.w, (int)t.h, frame, sheet.frameW);
 }
 
 void Game::createCoin(float x, float y, float w, float h, int value) {
