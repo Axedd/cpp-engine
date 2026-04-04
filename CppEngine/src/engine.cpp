@@ -58,11 +58,12 @@ bool Engine::init(const char* title, int width, int height)
     m_DeltaTime = 0.0f;
     m_Running = true;
 
+    m_Textures = std::make_unique<TextureManager>();
+
     if (m_Game) {
         m_Game->onInit(*this);
     }
 
-    m_Textures = std::make_unique<TextureManager>();
     return true;
 }
 

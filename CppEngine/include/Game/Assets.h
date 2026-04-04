@@ -3,15 +3,14 @@
 
 
 struct SpriteSheet {
-	SDL_Texture* tex = nullptr;
-	int frameW = 0;
-	int frameH = 0;
-	int frames = 0;
-	float fps = 0.0f;
-	bool loop = true;
+    unsigned int textureID = 0; // OpenGL handle
+    int frameW = 0;
+    int frameH = 0;
+    int frames = 0;
+    float fps = 0.0f;
+    bool loop = true;
 };
 
-
 struct GameAssets {
-	SpriteSheet coin;
-};	
+    SpriteSheet coin;
+};
