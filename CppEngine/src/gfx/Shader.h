@@ -15,7 +15,7 @@ public:
 	unsigned int ID;
 
 	// constructor
-	Shader(const char* vertexPath, const char* fragmentPath) : vertexPath(vertexPath), fragmentPath(fragmentPath) {}
+	Shader(const char* vertexPath, const char* fragmentPath) {}
 	~Shader(){
 		glDeleteProgram(ID);
 	}

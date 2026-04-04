@@ -150,6 +150,7 @@
     <ClInclude Include="include\ui\TextLabel.h" />
     <ClInclude Include="src\gfx\Shader.h" />
     <ClInclude Include="src\gfx\TextureManager.h" />
+    <ClInclude Include="src\gfx\Vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="C:\Users\frede\Downloads\glad\src\glad.c" />

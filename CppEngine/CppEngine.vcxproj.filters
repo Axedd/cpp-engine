@@ -18,6 +18,7 @@
     <ClInclude Include="include\Engine\ECS\Entity.h" />
     <ClInclude Include="include\Engine\Resources\ResourceManager.h" />
     <ClInclude Include="src\gfx\Shader.h" />
+    <ClInclude Include="src\gfx\Vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
