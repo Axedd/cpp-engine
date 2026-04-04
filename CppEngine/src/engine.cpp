@@ -1,4 +1,5 @@
 // engine.cpp
+#include <glad/glad.h>
 #include "Engine.h"
 #include "IGame.h"
 #include <iostream>
@@ -19,54 +20,49 @@ bool Engine::init(const char* title, int width, int height)
         return false;
     }
 
+    // tell SDL which version of OpenGL (3.3 Core)
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+
+    // activate double buffering
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
     m_Window = SDL_CreateWindow(
         title,
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        width,
-        height,
-        0
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        width, height,
+        SDL_WINDOW_OPENGL
     );
+
+    // create OpenGL context (for GPU memory)
+    m_GLContext = SDL_GL_CreateContext(m_Window);
+
+    if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
+        std::cout << "ERROR: Could not initialize GLAD!" << std::endl;
+        return false;
+    }
+    std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
+    std::cout << "GPU: " << glGetString(GL_RENDERER) << std::endl;
 
     if (!m_Window) {
         std::cout << "SDL_CreateWindow Error: " << SDL_GetError() << "\n";
         return false;
     }
 
-    m_Renderer = SDL_CreateRenderer(m_Window, -1, SDL_RENDERER_ACCELERATED);
-    if (!m_Renderer) {
-        std::cout << "SDL_CreateRenderer Error: " << SDL_GetError() << "\n";
-        return false;
-    
-    }
-
-    if (TTF_Init() == -1) {
-        std::cout << "TTF_Init Error: " << TTF_GetError() << "\n";
-        return false;
-    }
-
-
-    // Init SDL_Image
-    const int flags = IMG_INIT_PNG;
-    if ((IMG_Init(flags) & flags) != flags) {
-        std::cout << "IMG_Init error: " << IMG_GetError() << "\n";
-        return false;
-    }
-
-    m_Textures = std::make_unique<TextureManager>(m_Renderer);
 
     m_Frequency = SDL_GetPerformanceFrequency();
     m_LastCounter = SDL_GetPerformanceCounter();
     m_DeltaTime = 0.0f;
-
     m_Running = true;
 
-    // Call game init once SDL is ready
     if (m_Game) {
         m_Game->onInit(*this);
     }
 
+    m_Textures = std::make_unique<TextureManager>();
     return true;
 }
 
@@ -95,8 +91,15 @@ void Engine::run()
         processEvents();
 
         if (m_Game) {
+            // Clean the board
+            glClearColor(0.1f, 0.1f, 0.15f, 1.0f); // dark blue
+            glClear(GL_COLOR_BUFFER_BIT);
+
             m_Game->onUpdate(*this);
             m_Game->onRender(*this);
+
+            // Show what's drawn
+            SDL_GL_SwapWindow(m_Window);
         }
 
         std::uint64_t frameEnd = SDL_GetPerformanceCounter();
@@ -117,13 +120,13 @@ void Engine::shutdown()
         m_Textures.reset();
     }
 
-    IMG_Quit();
     TTF_Quit();
 
-    if (m_Renderer) {
-        SDL_DestroyRenderer(m_Renderer);
-        m_Renderer = nullptr;
+    if (m_GLContext) {
+        SDL_GL_DeleteContext(m_GLContext);
+        m_GLContext = nullptr;
     }
+
     if (m_Window) {
         SDL_DestroyWindow(m_Window);
         m_Window = nullptr;

@@ -1,10 +1,10 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include "../EngineShared/AssetFormat.h"
+#include "AssetFormat.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "../EngineShared/stb_image.h"
+#include "stb_image.h"
 
 
 void compileSimpleText(const std::string& inputPath, const std::string& outputPath) {

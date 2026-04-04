@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include "../../EngineShared/AssetFormat.h" 
+#include "AssetFormat.h" 
 
 void LoadAsset(const std::string& path) {
     std::ifstream file(path, std::ios::binary);

@@ -27,5 +27,6 @@
     <ClCompile Include="src\ui\HUD.cpp" />
     <ClCompile Include="src\ui\TextLabel.cpp" />
     <ClCompile Include="include\Engine\Resources\ResourceManager.cpp" />
+    <ClCompile Include="C:\Users\frede\Downloads\glad\src\glad.c" />
   </ItemGroup>
 </Project>

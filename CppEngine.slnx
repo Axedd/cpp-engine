@@ -6,9 +6,7 @@
   <Folder Name="/Solution Items/">
     <File Path=".gitignore" />
   </Folder>
-  <Project Path="../AssetCompiler/AssetCompiler.vcxproj" Id="3c8d4510-a730-4f23-8bbf-97a8d9721982" />
-  <Project Path="../EngineShared/EngineShared.vcxproj" Id="719e583d-189d-4390-890c-4751ac95a82f" />
-  <Project Path="CppEngine.vcxproj" Id="b780e704-cae8-4bfc-aae5-6b219215ad06">
-    <BuildDependency Project="../AssetCompiler/AssetCompiler.vcxproj" />
-  </Project>
+  <Project Path="AssetCompiler/AssetCompiler.vcxproj" Id="3c8d4510-a730-4f23-8bbf-97a8d9721982" />
+  <Project Path="CppEngine/CppEngine.vcxproj" Id="b780e704-cae8-4bfc-aae5-6b219215ad06" />
+  <Project Path="EngineShared/EngineShared.vcxproj" Id="719e583d-189d-4390-890c-4751ac95a82f" />
 </Solution>

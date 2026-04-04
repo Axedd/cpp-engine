@@ -105,7 +105,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)vendor\SDL2\include;$(ProjectDir)vendor\SDL2_image\include;$(ProjectDir)include;$(ProjectDir)vendor\SDL2_ttf-2.24.0\include;${ProjectDir}EngineShared\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)vendor\SDL2\include;$(ProjectDir)vendor\SDL2_image\include;$(ProjectDir)include;$(ProjectDir)vendor\SDL2_ttf-2.24.0\include;$(SolutionDir)EngineShared</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,6 +151,7 @@
     <ClInclude Include="src\gfx\TextureManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="C:\Users\frede\Downloads\glad\src\glad.c" />
     <ClCompile Include="include\Engine\Resources\ResourceManager.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\engine.cpp" />
