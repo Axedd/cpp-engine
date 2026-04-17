@@ -1,6 +1,8 @@
 #include "Shader.h"
 
+void checkCompilerErrors(unsigned int shader, std::string type) {
 
+}
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath) {
 	unsigned int vertex, fragment;
@@ -51,6 +53,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
 	glDeleteShader(vertex);
 	glDeleteShader(fragment);
 }
+
 
 int Shader::getUniformLocation(const std::string& name) {
 	auto it = Location.find(name);

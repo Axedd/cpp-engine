@@ -43,7 +43,7 @@ unsigned int TextureManager::load(const std::string& id, const std::string& path
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
-    // Indstil hvordan den skal tegnes (Pixel-art look)
+    // Modify how it is drawn (Pixel-art look)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
