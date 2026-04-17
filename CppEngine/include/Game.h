@@ -1,4 +1,7 @@
 #pragma once
+#include "src/gfx/VertexArray.h"
+#include "gfx/VertexBuffer.h"
+#include "gfx/Shader.h"
 #include "IGame.h"
 #include "Game/GameTypes.h"
 #include "Game/Assets.h"
@@ -47,4 +50,8 @@ private:
     GameState           m_State = GameState::Playing;
     bool                m_RequestedQuit = false;
     int score = 0;
+
+    std::unique_ptr<VertexArray> m_VAO;
+    std::unique_ptr<VertexBuffer> m_VBO;
+    std::unique_ptr<Shader> m_Shader;
 };
