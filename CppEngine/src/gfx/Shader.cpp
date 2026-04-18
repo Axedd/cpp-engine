@@ -1,7 +1,8 @@
 #include "gfx/Shader.h"
+#include <glad/glad.h>
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath) {
-	unsigned int vertex, fragment;
+	GLuint vertex, fragment;
 	int success;
 	char infoLog[512];
 

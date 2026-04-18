@@ -1,5 +1,6 @@
 #pragma once
 #include "VertexBuffer.h"
+#include <cstdint>
 
 class VertexArray {
 public:
@@ -14,5 +15,5 @@ public:
     void addBuffer(const VertexBuffer& vb, unsigned int index, int count, int stride, int offset);
 
 private:
-    unsigned int m_RendererID;
+    uint32_t m_RendererID;
 };

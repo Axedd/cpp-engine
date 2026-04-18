@@ -1,9 +1,9 @@
 #pragma once
-
+#include <cstdint>
 
 class IndexBuffer {
 public:
-	IndexBuffer(const unsigned int* data, unsigned int count);
+	IndexBuffer(uint32_t* data, int32_t count);
 	~IndexBuffer();
 
 	void bind() const;
@@ -11,6 +11,6 @@ public:
 
 	inline unsigned int getCount() const { return m_Count; }
 private:
-	unsigned int m_RendererID;
-	unsigned int m_Count;
+	uint32_t m_RendererID;
+	int32_t m_Count;
 };

@@ -21,6 +21,7 @@
     <ClInclude Include="include\gfx\Vertex.h" />
     <ClInclude Include="include\gfx\VertexBuffer.h" />
     <ClInclude Include="include\gfx\VertexArray.h" />
+    <ClInclude Include="include\gfx\IndexBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
@@ -35,6 +36,7 @@
     <ClCompile Include="src\gfx\Shader.cpp" />
     <ClCompile Include="src\gfx\VertexBuffer.cpp" />
     <ClCompile Include="src\gfx\VertexArray.cpp" />
+    <ClCompile Include="src\gfx\IndexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\shaders\basic.vert" />

@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 
 class VertexBuffer {
 public:
@@ -8,5 +9,5 @@ public:
 	void bind() const;
 	void unbind() const;
 private:
-	unsigned int m_RendererID; // OpenGL internal ID
+	uint32_t m_RendererID; // OpenGL internal ID
 };
