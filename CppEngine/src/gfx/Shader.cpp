@@ -57,9 +57,9 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath) {
 }
 
 // Caching 
-// enables cummincation from C++ to the shader while it runs
+// enables communication from C++ to the shader while it runs
 // "Uniform" comes from the fact that the value is identical for all
-// thousands of threads which runs in the draw-call
+// thousands of threads which run in the draw-call
 // so here we can send: time, colors and transform-matrices ...
 int Shader::getUniformLocation(const std::string& name) {
 	auto it = Location.find(name);
