@@ -7,6 +7,7 @@
 #include <cmath>
 #include <algorithm>
 #include "gfx/TextureManager.h"
+#include "gfx/Vertex.h"
 
 
 // physics
@@ -21,6 +22,21 @@ static void renderCoin(SDL_Renderer* r, ECS::Entity& c, const SpriteSheet& sheet
 
 void Game::onInit(Engine& engine)
 {
+    m_Shader = std::make_unique<Shader>("assets/shaders/basic.vert", "assets/shaders/basic.frag");
+
+    Vertex vertices[] = {
+        { -0.5f, -0.5f, 0.0f,  0.0f, 0.0f,  1.0f, 0.0f, 0.0f, 1.0f },
+        {  0.5f, -0.5f, 0.0f,  0.0f, 0.0f,  0.0f, 1.0f, 0.0f, 1.0f },
+        {  0.0f,  0.5f, 0.0f,  0.0f, 0.0f,  0.0f, 0.0f, 1.0f, 1.0f }
+    };
+
+    m_VAO = std::make_unique<VertexArray>();
+    m_VBO = std::make_unique<VertexBuffer>(vertices, sizeof(vertices));
+
+    unsigned int stride = sizeof(Vertex);
+    m_VAO->addBuffer(*m_VBO, 0, 3, stride, offsetof(Vertex, x)); // Pos
+    m_VAO->addBuffer(*m_VBO, 1, 2, stride, offsetof(Vertex, u)); // UV
+    m_VAO->addBuffer(*m_VBO, 2, 4, stride, offsetof(Vertex, r)); // Color
 
     m_PlayerHandle = m_Registry.createEntity();
 
@@ -134,6 +150,10 @@ void Game::onUpdate(Engine& engine)
 
 void Game::onRender(Engine& engine)
 {
+    m_Shader->use();
+    m_VAO->bind();
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
     // Get camera offsets for world-to-screen translation
     int camX = m_Camera->getRenderX();
     int camY = m_Camera->getRenderY();

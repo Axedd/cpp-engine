@@ -1,5 +1,5 @@
 #pragma once
-#include "src/gfx/VertexArray.h"
+#include "gfx/VertexArray.h"
 #include "gfx/VertexBuffer.h"
 #include "gfx/Shader.h"
 #include "IGame.h"

@@ -92,14 +92,13 @@ void Engine::run()
         processEvents();
 
         if (m_Game) {
-            // Clean the board
-            glClearColor(0.1f, 0.1f, 0.15f, 1.0f); // dark blue
+            // Clear the screen
+            glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
             m_Game->onUpdate(*this);
             m_Game->onRender(*this);
 
-            // Show what's drawn
             SDL_GL_SwapWindow(m_Window);
         }
 

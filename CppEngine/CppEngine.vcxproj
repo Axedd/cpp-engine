@@ -148,9 +148,11 @@
     <ClInclude Include="include\Camera.h" />
     <ClInclude Include="include\ui\HUD.h" />
     <ClInclude Include="include\ui\TextLabel.h" />
-    <ClInclude Include="src\gfx\Shader.h" />
-    <ClInclude Include="src\gfx\TextureManager.h" />
-    <ClInclude Include="src\gfx\Vertex.h" />
+    <ClInclude Include="include\gfx\Shader.h" />
+    <ClInclude Include="include\gfx\TextureManager.h" />
+    <ClInclude Include="include\gfx\Vertex.h" />
+    <ClInclude Include="include\gfx\VertexArray.h" />
+    <ClInclude Include="include\gfx\VertexBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="C:\Users\frede\Downloads\glad\src\glad.c" />
@@ -160,9 +162,15 @@
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\gfx\Shader.cpp" />
     <ClCompile Include="src\gfx\TextureManager.cpp" />
+    <ClCompile Include="src\gfx\VertexArray.cpp" />
+    <ClCompile Include="src\gfx\VertexBuffer.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ui\HUD.cpp" />
     <ClCompile Include="src\ui\TextLabel.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="assets\shaders\basic.frag" />
+    <None Include="assets\shaders\basic.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
